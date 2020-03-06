@@ -425,7 +425,9 @@ def dropkick(
     for metric in metrics:
         adata.obs.loc[a.obs_names, metric] = a.obs[metric]
         adata.obs[metric].fillna(0, inplace=True)  # fill ignored cells with zeros
-    adata.var.loc[a.var_names[a.var.highly_variable], "dropkick_coef"] = rc_.coef_.squeeze()
+    adata.var.loc[
+        a.var_names[a.var.highly_variable], "dropkick_coef"
+    ] = rc_.coef_.squeeze()
 
     # 5) save model hyperparameters in .uns
     adata.uns["dropkick_thresholds"] = adata_thresh
@@ -464,10 +466,14 @@ def coef_inventory(adata, n=10):
     print(adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"].nlargest(n))
     print("\nBottom HVGs by coefficient value (bad droplets):")
     print(adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"].nsmallest(n))
-    n_zero = (adata.var.dropkick_coef==0).sum()
+    n_zero = (adata.var.dropkick_coef == 0).sum()
     n_coef = (-adata.var.dropkick_coef.isna()).sum()
-    sparsity = round((n_zero/n_coef)*100, 3)
-    print("\n{} coefficients equal to zero. Model sparsity: {} %\n".format(n_zero, sparsity))
+    sparsity = round((n_zero / n_coef) * 100, 3)
+    print(
+        "\n{} coefficients equal to zero. Model sparsity: {} %\n".format(
+            n_zero, sparsity
+        )
+    )
 
 
 if __name__ == "__main__":

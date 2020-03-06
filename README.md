@@ -8,8 +8,7 @@ Automated cell filtering for single-cell RNA sequencing data.
 pip install -r requirements.txt
 ```
 
-## Usage
-From command line:
+#### Usage from command line:
 ```bash
 python dropkick.py regression -c <path/to/.h5ad>
 ```

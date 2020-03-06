@@ -11,10 +11,12 @@ from sklearn.utils.multiclass import check_classification_targets
 from errors import _check_error_flag
 
 from _glmnet import lognet, splognet, lsolns
-from util import (_fix_lambda_path,
-                   _check_user_lambda,
-                   _interpolate_model,
-                   _score_lambda_path)
+from util import (
+    _fix_lambda_path,
+    _check_user_lambda,
+    _interpolate_model,
+    _score_lambda_path,
+)
 
 
 class LogitNet(BaseEstimator):
@@ -139,11 +141,26 @@ class LogitNet(BaseEstimator):
 
     CV = StratifiedKFold
 
-    def __init__(self, alpha=1, n_lambda=100, min_lambda_ratio=1e-4,
-                 lambda_path=None, standardize=True, fit_intercept=True,
-                 lower_limits=-np.inf, upper_limits=np.inf,
-                 cut_point=1.0, n_splits=3, scoring=None, n_jobs=1, tol=1e-7,
-                 max_iter=100000, random_state=None, max_features=None, verbose=False):
+    def __init__(
+        self,
+        alpha=1,
+        n_lambda=100,
+        min_lambda_ratio=1e-4,
+        lambda_path=None,
+        standardize=True,
+        fit_intercept=True,
+        lower_limits=-np.inf,
+        upper_limits=np.inf,
+        cut_point=1.0,
+        n_splits=3,
+        scoring=None,
+        n_jobs=1,
+        tol=1e-7,
+        max_iter=100000,
+        random_state=None,
+        max_features=None,
+        verbose=False,
+    ):
 
         self.alpha = alpha
         self.n_lambda = n_lambda
@@ -201,10 +218,14 @@ class LogitNet(BaseEstimator):
         """
         a = adata.copy()  # select training set for fold
         a.X = a.layers["log1p_norm"].copy()  # use log1p-transformed counts to calc HVGs
-        sc.pp.highly_variable_genes(a, n_top_genes=n_hvgs, flavor="seurat", inplace=True)  # determine HVGs with Seurat method
-        X = adata.X[:, a.var.highly_variable].copy()  # X becomes scaled counts for all cells in HVGs only
+        sc.pp.highly_variable_genes(
+            a, n_top_genes=n_hvgs, flavor="seurat", inplace=True
+        )  # determine HVGs with Seurat method
+        X = adata.X[
+            :, a.var.highly_variable
+        ].copy()  # X becomes scaled counts for all cells in HVGs only
 
-        X, y = check_X_y(X, y, accept_sparse='csr', ensure_min_samples=2)
+        X, y = check_X_y(X, y, accept_sparse="csr", ensure_min_samples=2)
         if sample_weight is None:
             sample_weight = np.ones(X.shape[0])
         else:
@@ -220,10 +241,18 @@ class LogitNet(BaseEstimator):
             if len(self.upper_limits) != X.shape[1]:
                 raise ValueError("upper_limits must equal number of features")
 
-        if any(self.lower_limits > 0) if isinstance(self.lower_limits, np.ndarray) else self.lower_limits > 0:
+        if (
+            any(self.lower_limits > 0)
+            if isinstance(self.lower_limits, np.ndarray)
+            else self.lower_limits > 0
+        ):
             raise ValueError("lower_limits must be non-positive")
 
-        if any(self.upper_limits < 0) if isinstance(self.upper_limits, np.ndarray) else self.upper_limits < 0:
+        if (
+            any(self.upper_limits < 0)
+            if isinstance(self.upper_limits, np.ndarray)
+            else self.upper_limits < 0
+        ):
             raise ValueError("upper_limits must be positive")
 
         if self.alpha > 1 or self.alpha < 0:
@@ -235,14 +264,21 @@ class LogitNet(BaseEstimator):
         # score each model on the path of lambda values found by glmnet and
         # select the best scoring
         if self.n_splits >= 3:
-            self._cv = self.CV(n_splits=self.n_splits, shuffle=True,
-                               random_state=self.random_state)
+            self._cv = self.CV(
+                n_splits=self.n_splits, shuffle=True, random_state=self.random_state
+            )
 
-            cv_scores = _score_lambda_path(self, adata, y, n_hvgs, sample_weight,
-                                           relative_penalties,
-                                           self.scoring,
-                                           n_jobs=self.n_jobs,
-                                           verbose=self.verbose)
+            cv_scores = _score_lambda_path(
+                self,
+                adata,
+                y,
+                n_hvgs,
+                sample_weight,
+                relative_penalties,
+                self.scoring,
+                n_jobs=self.n_jobs,
+                verbose=self.verbose,
+            )
 
             self.cv_mean_score_ = np.atleast_1d(np.mean(cv_scores, axis=0))
             self.cv_standard_error_ = np.atleast_1d(stats.sem(cv_scores))
@@ -250,14 +286,16 @@ class LogitNet(BaseEstimator):
             self.lambda_max_inx_ = np.argmax(self.cv_mean_score_)
             self.lambda_max_ = self.lambda_path_[self.lambda_max_inx_]
 
-            target_score = self.cv_mean_score_[self.lambda_max_inx_] -\
-                self.cut_point * self.cv_standard_error_[self.lambda_max_inx_]
+            target_score = (
+                self.cv_mean_score_[self.lambda_max_inx_]
+                - self.cut_point * self.cv_standard_error_[self.lambda_max_inx_]
+            )
 
             self.lambda_best_inx_ = np.argwhere(self.cv_mean_score_ >= target_score)[0]
             self.lambda_best_ = self.lambda_path_[self.lambda_best_inx_]
 
             self.coef_ = self.coef_path_[..., self.lambda_best_inx_]
-            self.coef_ = self.coef_.squeeze(axis=self.coef_.ndim-1)
+            self.coef_ = self.coef_.squeeze(axis=self.coef_.ndim - 1)
             self.intercept_ = self.intercept_path_[..., self.lambda_best_inx_].squeeze()
             if self.intercept_.shape == ():  # convert 0d array to scalar
                 self.intercept_ = float(self.intercept_)
@@ -276,8 +314,7 @@ class LogitNet(BaseEstimator):
         self.classes_ = np.unique(y)  # the output of np.unique is sorted
         n_classes = len(self.classes_)
         if n_classes < 2:
-            raise ValueError("Training data need to contain at least 2 "
-                             "classes.")
+            raise ValueError("Training data need to contain at least 2 " "classes.")
 
         # glmnet requires the labels a one-hot-encoded array of
         # (n_samples, n_classes)
@@ -292,11 +329,11 @@ class LogitNet(BaseEstimator):
             # "reshapes" y to (n_samples, n_classes) and self.classes_ to
             # (n_samples, n_classes) and performs an element-wise comparison
             # resulting in _y with shape (n_samples, n_classes).
-            _y = (y[:, None] != self.classes_).astype(np.float64, order='F')
+            _y = (y[:, None] != self.classes_).astype(np.float64, order="F")
         else:
             # multinomial case, glmnet uses the entire array so we can
             # keep the original order.
-            _y = (y[:, None] == self.classes_).astype(np.float64, order='F')
+            _y = (y[:, None] == self.classes_).astype(np.float64, order="F")
 
         # use sample weights, making sure all weights are positive
         # this is inspired by the R wrapper for glmnet, in lognet.R
@@ -309,8 +346,7 @@ class LogitNet(BaseEstimator):
 
         # we need some sort of "offset" array for glmnet
         # an array of shape (n_examples, n_classes)
-        offset = np.zeros((X.shape[0], n_classes), dtype=np.float64,
-                          order='F')
+        offset = np.zeros((X.shape[0], n_classes), dtype=np.float64, order="F")
 
         # You should have thought of that before you got here.
         exclude_vars = 0
@@ -322,10 +358,9 @@ class LogitNet(BaseEstimator):
         # vignette:
         # http://web.stanford.edu/~hastie/glmnet/glmnet_alpha.html
         if relative_penalties is None:
-            relative_penalties = np.ones(X.shape[1], dtype=np.float64,
-                                         order='F')
+            relative_penalties = np.ones(X.shape[1], dtype=np.float64, order="F")
 
-        coef_bounds = np.empty((2, X.shape[1]), dtype=np.float64, order='F')
+        coef_bounds = np.empty((2, X.shape[1]), dtype=np.float64, order="F")
         coef_bounds[0, :] = self.lower_limits
         coef_bounds[1, :] = self.upper_limits
 
@@ -336,7 +371,6 @@ class LogitNet(BaseEstimator):
             # also since the magnitudes are constrained to sum to one, the
             # returned coefficients would be one half of the proper values
             n_classes = 1
-
 
         # This is a stopping criterion (nx)
         # R defaults to nx = num_features, and ne = num_features + 1
@@ -349,37 +383,41 @@ class LogitNet(BaseEstimator):
         if issparse(X):
             _x = csc_matrix(X, dtype=np.float64, copy=True)
 
-            (self.n_lambda_,
-             self.intercept_path_,
-             ca,
-             ia,
-             nin,
-             _,  # dev0
-             _,  # dev
-             self.lambda_path_,
-             _,  # nlp
-             jerr) = splognet(self.alpha,
-                              _x.shape[0],
-                              _x.shape[1],
-                              n_classes,
-                              _x.data,
-                              _x.indptr + 1,  # Fortran uses 1-based indexing
-                              _x.indices + 1,
-                              _y,
-                              offset,
-                              exclude_vars,
-                              relative_penalties,
-                              coef_bounds,
-                              max_features,
-                              X.shape[1] + 1,
-                              min_lambda_ratio,
-                              self.lambda_path,
-                              self.tol,
-                              n_lambda,
-                              self.standardize,
-                              self.fit_intercept,
-                              self.max_iter,
-                              0)
+            (
+                self.n_lambda_,
+                self.intercept_path_,
+                ca,
+                ia,
+                nin,
+                _,  # dev0
+                _,  # dev
+                self.lambda_path_,
+                _,  # nlp
+                jerr,
+            ) = splognet(
+                self.alpha,
+                _x.shape[0],
+                _x.shape[1],
+                n_classes,
+                _x.data,
+                _x.indptr + 1,  # Fortran uses 1-based indexing
+                _x.indices + 1,
+                _y,
+                offset,
+                exclude_vars,
+                relative_penalties,
+                coef_bounds,
+                max_features,
+                X.shape[1] + 1,
+                min_lambda_ratio,
+                self.lambda_path,
+                self.tol,
+                n_lambda,
+                self.standardize,
+                self.fit_intercept,
+                self.max_iter,
+                0,
+            )
         else:  # not sparse
             # some notes: glmnet requires both x and y to be float64, the two
             # arrays
@@ -388,35 +426,39 @@ class LogitNet(BaseEstimator):
             # copy any arrays passed to a wrapped function if they are not in
             # the fortran layout, to avoid making extra copies, ensure x and y
             # are `F_CONTIGUOUS` prior to calling lognet.
-            _x = X.astype(dtype=np.float64, order='F', copy=True)
+            _x = X.astype(dtype=np.float64, order="F", copy=True)
 
-            (self.n_lambda_,
-             self.intercept_path_,
-             ca,
-             ia,
-             nin,
-             _,  # dev0
-             _,  # dev
-             self.lambda_path_,
-             _,  # nlp
-             jerr) = lognet(self.alpha,
-                            n_classes,
-                            _x,
-                            _y,
-                            offset,
-                            exclude_vars,
-                            relative_penalties,
-                            coef_bounds,
-                            X.shape[1] + 1,
-                            min_lambda_ratio,
-                            self.lambda_path,
-                            self.tol,
-                            max_features,
-                            n_lambda,
-                            self.standardize,
-                            self.fit_intercept,
-                            self.max_iter,
-                            0)
+            (
+                self.n_lambda_,
+                self.intercept_path_,
+                ca,
+                ia,
+                nin,
+                _,  # dev0
+                _,  # dev
+                self.lambda_path_,
+                _,  # nlp
+                jerr,
+            ) = lognet(
+                self.alpha,
+                n_classes,
+                _x,
+                _y,
+                offset,
+                exclude_vars,
+                relative_penalties,
+                coef_bounds,
+                X.shape[1] + 1,
+                min_lambda_ratio,
+                self.lambda_path,
+                self.tol,
+                max_features,
+                n_lambda,
+                self.standardize,
+                self.fit_intercept,
+                self.max_iter,
+                0,
+            )
 
         # raises RuntimeError if self.jerr_ is nonzero
         self.jerr_ = jerr
@@ -425,14 +467,14 @@ class LogitNet(BaseEstimator):
         # glmnet may not return the requested number of lambda values, so we
         # need to trim the trailing zeros from the returned path so
         # len(lambda_path_) is equal to n_lambda_
-        self.lambda_path_ = self.lambda_path_[:self.n_lambda_]
+        self.lambda_path_ = self.lambda_path_[: self.n_lambda_]
         # also fix the first value of lambda
         self.lambda_path_ = _fix_lambda_path(self.lambda_path_)
-        self.intercept_path_ = self.intercept_path_[:, :self.n_lambda_]
+        self.intercept_path_ = self.intercept_path_[:, : self.n_lambda_]
         # also trim the compressed coefficient matrix
-        ca = ca[:, :, :self.n_lambda_]
+        ca = ca[:, :, : self.n_lambda_]
         # and trim the array of n_coef per lambda (may or may not be non-zero)
-        nin = nin[:self.n_lambda_]
+        nin = nin[: self.n_lambda_]
         # decompress the coefficients returned by glmnet, see doc.py
         self.coef_path_ = lsolns(X.shape[1], ca, ia, nin)
         # coef_path_ has shape (n_features, n_classes, n_lambda), we should
@@ -444,13 +486,13 @@ class LogitNet(BaseEstimator):
 
     def decision_function(self, X, lamb=None):
         lambda_best = None
-        if hasattr(self, 'lambda_best_'):
+        if hasattr(self, "lambda_best_"):
             lambda_best = self.lambda_best_
 
         lamb = _check_user_lambda(self.lambda_path_, lambda_best, lamb)
-        coef, intercept = _interpolate_model(self.lambda_path_,
-                                             self.coef_path_,
-                                             self.intercept_path_, lamb)
+        coef, intercept = _interpolate_model(
+            self.lambda_path_, self.coef_path_, self.intercept_path_, lamb
+        )
 
         # coef must be (n_classes, n_features, n_lambda)
         if coef.ndim != 3:
@@ -460,7 +502,7 @@ class LogitNet(BaseEstimator):
         if intercept.ndim != 2:
             intercept = intercept[:, np.newaxis]
 
-        X = check_array(X, accept_sparse='csr')
+        X = check_array(X, accept_sparse="csr")
         # return (n_samples, n_classes, n_lambda)
         z = np.empty((X.shape[0], coef.shape[0], coef.shape[-1]))
         # well... sometimes we just need a for loop
@@ -505,7 +547,7 @@ class LogitNet(BaseEstimator):
         if z.shape[1] == 1:
             # binomial, for consistency and to match scikit-learn, add the
             # complement so z has shape (n_samples, 2, n_lambda)
-            z = np.concatenate((1-z, z), axis=1)
+            z = np.concatenate((1 - z, z), axis=1)
         else:
             # normalize for multinomial
             z /= np.expand_dims(z.sum(axis=1), axis=1)
