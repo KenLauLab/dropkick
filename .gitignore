@@ -1,0 +1,10 @@
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+data.dat
+result.dat
+.RHistory
+.nb.html
+*.pyc
+.vscode/
+.envrc
