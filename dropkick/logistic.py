@@ -462,7 +462,7 @@ class LogitNet(BaseEstimator):
 
         # raises RuntimeError if self.jerr_ is nonzero
         self.jerr_ = jerr
-        _check_error_flag(self.jerr_)
+        _check_error_flag(self.jerr_, verbose_convergence=self.verbose)
 
         # glmnet may not return the requested number of lambda values, so we
         # need to trim the trailing zeros from the returned path so

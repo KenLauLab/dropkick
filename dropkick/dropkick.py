@@ -126,25 +126,31 @@ def recipe_dropkick(
             print("Calculating metrics:")
         # identify mitochondrial genes
         adata.var["mito"] = adata.var_names.str.contains(mito_names)
-        # identify putative ambient genes by lowest dropout pct (top 10)
+        # identify putative ambient genes by lowest dropout pct (top n_ambient)
         adata.var["ambient"] = np.array(
             adata.X.astype(bool).sum(axis=0) / adata.n_obs
         ).squeeze()
-        if verbose:
-            print(
-                "Top {} ambient genes have dropout rates between {} and {} percent:\n\t{}".format(
-                    n_ambient,
-                    round((1 - adata.var.ambient.nlargest(n=n_ambient).max()) * 100, 2),
-                    round((1 - adata.var.ambient.nlargest(n=n_ambient).min()) * 100, 2),
-                    adata.var.ambient.nlargest(n=n_ambient).index.tolist(),
-                )
-            )
+        lowest_dropout = round(
+            (1 - adata.var.ambient.nlargest(n=n_ambient).max()) * 100, 3
+        )
+        highest_dropout = round(
+            (1 - adata.var.ambient.nlargest(n=n_ambient).min()) * 100, 3
+        )
         adata.var["ambient"] = (
             adata.var.ambient >= adata.var.ambient.nlargest(n=n_ambient).min()
         )
+        if verbose:
+            print(
+                "Top {} ambient genes have dropout rates between {} and {} percent:\n\t{}".format(
+                    len(adata.var_names[adata.var.ambient]),
+                    lowest_dropout,
+                    highest_dropout,
+                    adata.var_names[adata.var.ambient].tolist(),
+                )
+            )
         # calculate standard qc .obs and .var
         sc.pp.calculate_qc_metrics(
-            adata, qc_vars=["mito", "ambient"], inplace=True, percent_top=[10, 50, 100]
+            adata, qc_vars=["mito", "ambient"], inplace=True, percent_top=None
         )
         # other arcsinh-transformed metrics
         adata.obs["arcsinh_total_counts"] = np.arcsinh(adata.obs["total_counts"])
@@ -298,12 +304,13 @@ def dropkick(
     metrics=["arcsinh_n_genes_by_counts", "pct_counts_ambient",],
     directions=["above", "below"],
     alphas=[0.1],
-    n_lambda=10,
+    n_lambda=100,
     cut_point=1,
     n_splits=5,
-    max_iter=100000,
+    max_iter=1000,
     n_jobs=-1,
     seed=18,
+    verbose=True,
 ):
     """
     generate logistic regression model of cell quality
@@ -329,6 +336,7 @@ def dropkick(
         max_iter (int): number of iterations for glmnet optimization
         n_jobs (int): number of threads for cross validation by glmnet
         seed (int): random state for cross validation by glmnet
+        verbose (bool): verbosity for glmnet training and warnings
 
     Returns:
         adata_thresh (dict): dictionary of automated thresholds on heuristics
@@ -366,12 +374,13 @@ def dropkick(
 
     X = a.X[:, a.var.highly_variable].copy()  # final X is HVGs
     y = a.obs["train"].copy(deep=True)  # final y is "train" labels from step 2
+    print("Training LogitNet with alphas: {}".format(alphas))
 
     if len(alphas) > 1:
         # 3.1) cross-validation to choose alpha and lambda values
         cv_scores = {"rc": [], "lambda": [], "alpha": [], "score": []}  # dictionary o/p
         for alpha in alphas:
-            print("Training LogitNet with alpha: {}".format(alpha), end="  ")
+            # print("Training LogitNet with alpha: {}".format(alpha), end="  ")
             rc = LogitNet(
                 alpha=alpha,
                 n_lambda=n_lambda,
@@ -380,10 +389,11 @@ def dropkick(
                 max_iter=max_iter,
                 n_jobs=n_jobs,
                 random_state=seed,
+                verbose=verbose,
             )
-            with Spinner():
-                rc.fit(adata=a, y=y, n_hvgs=n_hvgs)
-            print("\n", end="")
+            # with Spinner():
+            rc.fit(adata=a, y=y, n_hvgs=n_hvgs)
+            # print("\n", end="")
             cv_scores["rc"].append(rc)
             cv_scores["alpha"].append(alpha)
             cv_scores["lambda"].append(rc.lambda_best_)
@@ -401,7 +411,7 @@ def dropkick(
         print("Chosen lambda value: {}; Chosen alpha value: {}".format(lambda_, alpha_))
     else:
         # 3.2) train model with single alpha value
-        print("Training LogitNet with alpha: {}".format(alphas[0]), end="  ")
+        # print("Training LogitNet with alpha: {}".format(alphas[0]), end="  ")
         rc_ = LogitNet(
             alpha=alphas[0],
             n_lambda=n_lambda,
@@ -410,13 +420,15 @@ def dropkick(
             max_iter=max_iter,
             n_jobs=n_jobs,
             random_state=seed,
+            verbose=verbose,
         )
-        with Spinner():
-            rc_.fit(adata=a, y=y, n_hvgs=n_hvgs)
-        print("\n", end="")
+        # with Spinner():
+        rc_.fit(adata=a, y=y, n_hvgs=n_hvgs)
+        # print("\n", end="")
+        print("Chosen lambda value: {}".format(rc_.lambda_best_))
         lambda_, alpha_ = rc_.lambda_best_, alphas[0]
 
-    # 4) use ridge model to assign scores and labels to original adata
+    # 4) use model to assign scores and labels to original adata
     print("Assigning scores and labels")
     adata.obs.loc[a.obs_names, "dropkick_score"] = rc_.predict_proba(X)[:, 1]
     adata.obs.dropkick_score.fillna(0, inplace=True)  # fill ignored cells with zeros
@@ -438,6 +450,7 @@ def dropkick(
         "directions": directions,
         "alphas": alphas,
         "chosen_alpha": alpha_,
+        "lambda_path": rc_.lambda_path_,
         "chosen_lambda": lambda_,
         "n_lambda": n_lambda,
         "cut_point": cut_point,
@@ -493,7 +506,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--directions",
         type=str,
-        help="Direction of thresholding for each heuristic. Several can be specified with '--obs-cols above below'",
+        help="Direction of thresholding for each heuristic. Several can be specified with '--directions above below'",
         nargs="+",
         default=["above", "below"],
     )
@@ -502,12 +515,6 @@ if __name__ == "__main__":
         type=str,
         help="Method used for automatic thresholding on heuristics. One of ['otsu','li','mean']. Default 'Otsu'",
         default="otsu",
-    )
-    parser.add_argument(
-        "--mito-names",
-        type=str,
-        help="Substring or regex defining mitochondrial genes. Default '^mt-|^MT-'",
-        default="^mt-|^MT-",
     )
     parser.add_argument(
         "--n-hvgs",
@@ -521,22 +528,22 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-dir",
         type=str,
-        help="Output directory. Output will be placed in [output-dir]/[name]...",
+        help="Output directory. Output will be placed in [output-dir]/[name]_dropkick.h5ad. Default './'",
         nargs="?",
         default=".",
     )
     parser.add_argument(
         "--alphas",
         type=float,
-        help="Ratios between l1 and l2 regularization for regression model",
+        help="Ratios between l1 and l2 regularization for regression model. Default [0.1]",
         nargs="*",
         default=[0.1],
     )
     parser.add_argument(
         "--n-lambda",
         type=int,
-        help="Number of lambda (regularization strength) values to test. Default 10",
-        default=10,
+        help="Number of lambda (regularization strength) values to test. Default 100",
+        default=100,
     )
     parser.add_argument(
         "--cut-point",
@@ -553,14 +560,20 @@ if __name__ == "__main__":
     parser.add_argument(
         "--n-iter",
         type=int,
-        help="Maximum number of iterations for optimization. Default 100000",
-        default=100000,
+        help="Maximum number of iterations for optimization. Default 1000",
+        default=1000,
     )
     parser.add_argument(
         "--n-jobs",
         type=int,
         help="Maximum number of threads for cross validation. Default -1",
         default=-1,
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Verbosity of glmnet module. Default False",
+        action="store_true",
     )
 
     args = parser.parse_args()
@@ -577,7 +590,6 @@ if __name__ == "__main__":
 
     regression_model = dropkick(
         adata,
-        mito_names=args.mito_names,
         n_hvgs=args.n_hvgs,
         thresh_method=args.thresh_method,
         metrics=args.obs_cols,
@@ -589,6 +601,7 @@ if __name__ == "__main__":
         max_iter=args.n_iter,
         n_jobs=args.n_jobs,
         seed=args.seed,
+        verbose=args.verbose,
     )
     # generate plot of chosen training thresholds on heuristics
     print(
@@ -603,11 +616,7 @@ if __name__ == "__main__":
         "{}/{}_{}_thresholds.png".format(args.output_dir, name, args.thresh_method)
     )
     # save new labels
-    print(
-        "Writing updated counts to {}/{}_{}.h5ad".format(
-            args.output_dir, name, args.command
-        )
-    )
+    print("Writing updated counts to {}/{}_dropkick.h5ad".format(args.output_dir, name))
     adata.write(
         "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
     )
