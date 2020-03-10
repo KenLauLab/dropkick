@@ -51,7 +51,6 @@ class Spinner:
             return False
 
 
-
 def recipe_dropkick(
     adata,
     X_final="raw_counts",
@@ -442,6 +441,9 @@ def dropkick(
         "chosen_alpha": alpha_,
         "lambda_path": rc_.lambda_path_,
         "chosen_lambda": lambda_,
+        "coef_path": rc_.coef_path_.squeeze().T,
+        "cv_mean_score": rc_.cv_mean_score_,
+        "cv_standard_error": rc_.cv_standard_error_,
         "n_lambda": n_lambda,
         "cut_point": cut_point,
         "n_splits": n_splits,
@@ -459,7 +461,7 @@ def coef_inventory(adata, n=10):
     along with sparsity
 
     Parameters:
-        adata (anndata.AnnData): object generated from dropkick.py ("regression")
+        adata (anndata.AnnData): object generated from dropkick
         n (int): number of genes to show at top and bottom of coefficient list
 
     Returns:
@@ -477,3 +479,64 @@ def coef_inventory(adata, n=10):
             n_zero, sparsity
         )
     )
+
+
+def coef_plot(adata, show=True):
+    """
+    plot dropkick coefficient values and cross validation (CV) scores for tested values
+    of lambda (lambda_path)
+
+    Parameters:
+        adata (anndata.AnnData): object generated from dropkick
+        show (bool): show plot or return object
+
+    Returns:
+        plot of CV scores (mean +/- SEM) and coefficient values (coef_path) versus
+        log(lambda_path). includes indicator of chosen lambda value.
+    """
+    fig, ax = plt.subplots(figsize=(9, 5))
+    # plot coefficient values versus log(lambda) on left y-axis
+    ax.set_title("Dropkick Coefficients")
+    ax.set_xlabel("Log (lambda)")
+    ax.set_ylabel("Coefficient Value", color="g")
+    ax.plot(
+        np.log(adata.uns["dropkick_args"]["lambda_path"]),
+        adata.uns["dropkick_args"]["coef_path"],
+        alpha=0.5,
+    )
+    ax.tick_params(axis="y", labelcolor="g")
+    # plot CV scores versus log(lambda) on right y-axis
+    ax2 = ax.twinx()
+    ax2.set_ylabel("CV Mean Score", color="b")
+    ax2.plot(
+        np.log(adata.uns["dropkick_args"]["lambda_path"]),
+        adata.uns["dropkick_args"]["cv_mean_score"],
+        label="CV Score Mean",
+        color="b",
+    )
+    ax2.fill_between(
+        np.log(adata.uns["dropkick_args"]["lambda_path"]),
+        y1=adata.uns["dropkick_args"]["cv_mean_score"]
+        - adata.uns["dropkick_args"]["cv_standard_error"],
+        y2=adata.uns["dropkick_args"]["cv_mean_score"]
+        + adata.uns["dropkick_args"]["cv_standard_error"],
+        color="b",
+        alpha=0.2,
+        label="CV Score SEM",
+    )
+    ax2.tick_params(axis="y", labelcolor="b")
+    # plot vertical line at chosen lambda value and add to legend
+    plt.axvline(
+        np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
+        label="Chosen lambda: {:.2e}".format(
+            adata.uns["dropkick_args"]["chosen_lambda"][0]
+        ),
+        color="k",
+        ls="--",
+    )
+    plt.legend()
+    fig.tight_layout()
+    if show:
+        plt.show()
+    else:
+        return fig

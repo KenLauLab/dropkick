@@ -8,7 +8,7 @@ import os, errno, argparse
 import scanpy as sc
 import matplotlib.pyplot as plt
 
-from .api import dropkick, plot_thresh_obs
+from .api import dropkick, plot_thresh_obs, coef_plot
 
 
 def check_dir_exists(path):
@@ -20,6 +20,7 @@ def check_dir_exists(path):
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -141,16 +142,19 @@ def main():
             args.output_dir, name, args.thresh_method
         )
     )
-    _ = plot_thresh_obs(
-        adata, adata.uns["dropkick_thresholds"], bins=40, show=False
-    )
+    _ = plot_thresh_obs(adata, adata.uns["dropkick_thresholds"], bins=40, show=False)
     plt.savefig(
         "{}/{}_{}_thresholds.png".format(args.output_dir, name, args.thresh_method)
     )
+    # generate plot of dropkick coefficient values and CV scores vs tested lambda_path
+    print("Saving coefficient plot to {}/{}_coef.png".format(args.output_dir, name))
+    _ = coef_plot(adata, show=False)
+    plt.savefig("{}/{}_coef.png".format(args.output_dir, name))
     # save new labels
     print("Writing updated counts to {}/{}_dropkick.h5ad".format(args.output_dir, name))
     adata.write(
         "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
     )
+
 
 main()

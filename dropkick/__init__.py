@@ -1,9 +1,11 @@
-from .api import recipe_dropkick, dropkick, plot_thresh_obs, coef_inventory
-__version__ = "0.0.6"
+from .api import recipe_dropkick, dropkick, plot_thresh_obs, coef_inventory, coef_plot
+
+__version__ = "0.0.7"
 
 __all__ = [
-    'recipe_dropkick',
-    'dropkick',
-    'plot_thresh_obs',
-    'coef_inventory',
-    ]
+    "recipe_dropkick",
+    "dropkick",
+    "plot_thresh_obs",
+    "coef_inventory",
+    "coef_plot",
+]
