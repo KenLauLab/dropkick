@@ -67,13 +67,21 @@ if __name__ == "__main__":
 
     setup(
         name="dropkick",
-        version="0.0.7",
+        version="0.0.8",
         description="Automated scRNA-seq filtering",
         long_description=long_description,
         author="Cody Heiser",
         author_email="codyheiser49@gmail.com",
         url="https://github.com/KenLauLab/dropkick",
-        install_requires=read("requirements.txt").splitlines(),
+        install_requires=[
+            "matplotlib>=3.0.3",
+            "numpy>=1.9.2",
+            "pandas>=0.25.3",
+            "scanpy>=1.4.4",
+            "scikit-image>=0.16",
+            "scikit-learn>=0.18.0",
+            "scipy>=0.14.1",
+        ],
         ext_modules=[glmnet_lib],
         packages=setuptools.find_packages(),
         classifiers=[
