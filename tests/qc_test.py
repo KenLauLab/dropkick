@@ -33,7 +33,7 @@ import scanpy as sc
 import seaborn as sns
 from matplotlib import gridspec
 from scipy.stats import mannwhitneyu
-from dropkick import recipe_dropkick, coef_inventory
+from dropkick.api import recipe_dropkick, coef_inventory
 
 
 def set_diff(adata, labels, metrics=None):

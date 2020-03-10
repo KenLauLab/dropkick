@@ -8,3 +8,6 @@ result.dat
 *.pyc
 .vscode/
 .envrc
+build/
+dist/
+dropkick.egg-info/

@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d
 from sklearn.base import clone
 from sklearn.exceptions import UndefinedMetricWarning
 
-from scorer import check_scoring
+from .scorer import check_scoring
 
 
 def _score_lambda_path(

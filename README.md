@@ -3,14 +3,14 @@ Automated cell filtering for single-cell RNA sequencing data.
 
 `dropkick` works primarily with [**Scanpy**](https://icb-scanpy.readthedocs-hosted.com/en/stable/)'s `AnnData` objects, and accepts input files in `.h5ad` or flat (`.csv`, `.tsv`) format. It also writes outputs to `.h5ad` files when called from the command line.
 
-#### Install Requirements:
+#### Install from PyPI:
 ```bash
-pip install -r requirements.txt
+pip install -i https://test.pypi.org/simple/ dropkick  # testing package index
 ```
 
 #### Usage from command line:
 ```bash
-python dropkick.py regression -c <path/to/.h5ad>
+python -m dropkick path/to/counts.h5ad
 ```
 
 Output will be saved in a new `.h5ad` file containing __dropkick__ scores, labels, and model parameters.
