@@ -6,7 +6,7 @@ package initialization
 """
 from .api import recipe_dropkick, dropkick, plot_thresh_obs, coef_inventory, coef_plot
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "dropkick",

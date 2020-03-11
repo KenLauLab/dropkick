@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     setup(
         name="dropkick",
-        version="0.1.0",
+        version="0.1.1",
         description="Automated scRNA-seq filtering",
         long_description=long_description,
         author="Cody Heiser",
