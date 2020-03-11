@@ -10,6 +10,7 @@ import io
 import setuptools
 from setuptools import setup
 
+
 try:
     from numpy.distutils.core import Extension, setup
 except ImportError:
@@ -67,13 +68,15 @@ glmnet_lib = Extension(
 )
 
 if __name__ == "__main__":
+    import versioneer
 
     with open("README.md", "r") as fh:
         long_description = fh.read()
 
     setup(
         name="dropkick",
-        version="0.1.1",
+        version=versioneer.get_version(),
+        cmdclass=versioneer.get_cmdclass(),
         description="Automated scRNA-seq filtering",
         long_description=long_description,
         author="Cody Heiser",

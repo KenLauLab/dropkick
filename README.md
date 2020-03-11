@@ -8,7 +8,7 @@ Installation via `pip` or from source requires a Fortran compiler. For Mac users
 
 #### Install from PyPI:
 ```bash
-pip install -i https://test.pypi.org/simple/ dropkick  # testing package index
+pip install dropkick
 ```
 
 #### Or compile from source:

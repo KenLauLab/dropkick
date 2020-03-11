@@ -46,7 +46,7 @@ def main():
     parser.add_argument(
         "--thresh-method",
         type=str,
-        help="Method used for automatic thresholding on heuristics. One of ['otsu','li','mean']. Default 'Otsu'",
+        help="Method used for automatic thresholding on heuristics. One of ['otsu','li','mean']. Default 'otsu'",
         default="otsu",
     )
     parser.add_argument(

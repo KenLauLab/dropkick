@@ -17,40 +17,6 @@ from skimage.filters import threshold_li, threshold_otsu, threshold_mean
 from .logistic import LogitNet
 
 
-class Spinner:
-    busy = False
-    delay = 0.1
-
-    @staticmethod
-    def spinning_cursor():
-        while 1:
-            for cursor in "|/-\\":
-                yield cursor
-
-    def __init__(self, delay=None):
-        self.spinner_generator = self.spinning_cursor()
-        if delay and float(delay):
-            self.delay = delay
-
-    def spinner_task(self):
-        while self.busy:
-            sys.stdout.write(next(self.spinner_generator))
-            sys.stdout.flush()
-            time.sleep(self.delay)
-            sys.stdout.write("\b")
-            sys.stdout.flush()
-
-    def __enter__(self):
-        self.busy = True
-        threading.Thread(target=self.spinner_task).start()
-
-    def __exit__(self, exception, value, tb):
-        self.busy = False
-        time.sleep(self.delay)
-        if exception is not None:
-            return False
-
-
 def recipe_dropkick(
     adata,
     X_final="raw_counts",
@@ -299,7 +265,7 @@ def dropkick(
     max_iter=1000,
     n_jobs=-1,
     seed=18,
-    verbose=True,
+    verbose=False,
 ):
     """
     generate logistic regression model of cell quality
@@ -380,9 +346,7 @@ def dropkick(
                 random_state=seed,
                 verbose=verbose,
             )
-            # with Spinner():
             rc.fit(adata=a, y=y, n_hvgs=n_hvgs)
-            # print("\n", end="")
             cv_scores["rc"].append(rc)
             cv_scores["alpha"].append(alpha)
             cv_scores["lambda"].append(rc.lambda_best_)
@@ -400,7 +364,6 @@ def dropkick(
         print("Chosen lambda value: {}; Chosen alpha value: {}".format(lambda_, alpha_))
     else:
         # 3.2) train model with single alpha value
-        # print("Training LogitNet with alpha: {}".format(alphas[0]), end="  ")
         rc_ = LogitNet(
             alpha=alphas[0],
             n_lambda=n_lambda,
@@ -411,9 +374,7 @@ def dropkick(
             random_state=seed,
             verbose=verbose,
         )
-        # with Spinner():
         rc_.fit(adata=a, y=y, n_hvgs=n_hvgs)
-        # print("\n", end="")
         print("Chosen lambda value: {}".format(rc_.lambda_best_))
         lambda_, alpha_ = rc_.lambda_best_, alphas[0]
 

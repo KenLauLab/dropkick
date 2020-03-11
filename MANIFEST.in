@@ -3,3 +3,5 @@ include README.md
 include LICENSE
 recursive-include LICENSES *
 include dropkick/*.pyf
+include versioneer.py
+include dropkick/_version.py
