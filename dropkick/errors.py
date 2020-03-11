@@ -2,7 +2,8 @@ import warnings
 
 
 def _check_error_flag(jerr, verbose_convergence=True):
-    """Check the glmnet solver error flag and issue warnings or raise
+    """
+    Check the glmnet solver error flag and issue warnings or raise
     exceptions as appropriate.
 
     The codes break down roughly as follows:

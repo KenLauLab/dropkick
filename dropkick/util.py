@@ -13,7 +13,8 @@ from .scorer import check_scoring
 def _score_lambda_path(
     est, adata, y, n_hvgs, sample_weight, relative_penalties, scoring, n_jobs, verbose
 ):
-    """Score each model found by glmnet using cross validation.
+    """
+    Score each model found by glmnet using cross validation.
 
     Parameters
     ----------
@@ -93,7 +94,8 @@ def _fit_and_score(
     train_inx,
     test_inx,
 ):
-    """Fit and score a single model.
+    """
+    Fit and score a single model.
 
     Parameters
     ----------
@@ -152,8 +154,10 @@ def _fit_and_score(
 
 
 def _fix_lambda_path(lambda_path):
-    """Replace the first value in lambda_path (+inf) with something more
-    reasonable. The method below matches what is done in the R/glmnent wrapper."""
+    """
+    Replace the first value in lambda_path (+inf) with something more
+    reasonable. The method below matches what is done in the R/glmnent wrapper.
+    """
     if lambda_path.shape[0] > 2:
         lambda_0 = math.exp(2 * math.log(lambda_path[1]) - math.log(lambda_path[2]))
         lambda_path[0] = lambda_0
@@ -161,7 +165,8 @@ def _fix_lambda_path(lambda_path):
 
 
 def _check_user_lambda(lambda_path, lambda_best=None, lamb=None):
-    """Verify the user-provided value of lambda is acceptable and ensure this
+    """
+    Verify the user-provided value of lambda is acceptable and ensure this
     is a 1-d array.
 
     Parameters
@@ -209,7 +214,8 @@ def _check_user_lambda(lambda_path, lambda_best=None, lamb=None):
 
 
 def _interpolate_model(lambda_path, coef_path, intercept_path, lamb):
-    """Interpolate coefficients and intercept between values of lambda.
+    """
+    Interpolate coefficients and intercept between values of lambda.
 
     Parameters
     ----------

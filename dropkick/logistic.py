@@ -20,8 +20,8 @@ from .util import (
 
 
 class LogitNet(BaseEstimator):
-    """Logistic Regression with elastic net penalty.
-
+    """
+    Logistic Regression with elastic net penalty.
     This is a wrapper for the glmnet function lognet.
 
     Parameters
@@ -181,7 +181,8 @@ class LogitNet(BaseEstimator):
         self.verbose = verbose
 
     def fit(self, adata, y, n_hvgs, sample_weight=None, relative_penalties=None):
-        """Fit the model to training data. If n_splits > 1 also run n-fold cross
+        """
+        Fit the model to training data. If n_splits > 1 also run n-fold cross
         validation on all values in lambda_path.
 
         The model will be fit n+1 times. On the first pass, the lambda_path

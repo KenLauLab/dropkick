@@ -5,7 +5,6 @@ the entire lambda path of a glmnet model.
     - lambda parameter added to the scorers
     - scorers return an array of scores, [n_lambda,]
 """
-
 # Authors: Andreas Mueller <amueller@ais.uni-bonn.de>
 #          Lars Buitinck <L.J.Buitinck@uva.nl>
 #          Arnaud Joly <arnaud.v.joly@gmail.com>
@@ -59,7 +58,8 @@ class _BaseScorer(six.with_metaclass(ABCMeta, object)):
 
 class _PredictScorer(_BaseScorer):
     def __call__(self, estimator, X, y_true, sample_weight=None, lamb=None):
-        """Evaluate predicted target values for X relative to y_true and one or
+        """
+        Evaluate predicted target values for X relative to y_true and one or
         more values for lambda.
 
         Parameters
@@ -103,7 +103,8 @@ class _PredictScorer(_BaseScorer):
 
 class _ProbaScorer(_BaseScorer):
     def __call__(self, clf, X, y_true, sample_weight=None, lamb=None):
-        """Evaluate predicted probabilities for X relative to y_true.
+        """
+        Evaluate predicted probabilities for X relative to y_true.
 
         Parameters
         ----------
@@ -152,7 +153,8 @@ class _ProbaScorer(_BaseScorer):
 
 class _ThresholdScorer(_BaseScorer):
     def __call__(self, clf, X, y_true, sample_weight=None, lamb=None):
-        """Evaluate decision function output for X relative to y_true.
+        """
+        Evaluate decision function output for X relative to y_true.
 
         Parameters
         ----------
@@ -223,8 +225,8 @@ def _passthrough_scorer(estimator, *args, **kwargs):
 
 
 def check_scoring(estimator, scoring=None, allow_none=False):
-    """Determine scorer from user options.
-
+    """
+    Determine scorer from user options.
     A TypeError will be thrown if the estimator cannot be scored.
 
     Parameters
@@ -273,13 +275,12 @@ def make_scorer(
     needs_threshold=False,
     **kwargs
 ):
-    """Make a scorer from a performance metric or loss function.
-
+    """
+    Make a scorer from a performance metric or loss function.
     This factory function wraps scoring functions for use in GridSearchCV
     and cross_val_score. It takes a score function, such as ``accuracy_score``,
     ``mean_squared_error``, ``adjusted_rand_index`` or ``average_precision``
     and returns a callable that scores an estimator's output.
-
     Read more in the :ref:`User Guide <scoring>`.
 
     Parameters
