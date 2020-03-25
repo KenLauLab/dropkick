@@ -1,12 +1,12 @@
 ![alt text](data/dropkick_logo.png)
 
-Automated cell filtering for single-cell RNA sequencing data.
+### Automated cell filtering for single-cell RNA sequencing data.
 
 [![Latest Version][pypi-image]][pypi-url]
 
+---
 `dropkick` works primarily with [**Scanpy**](https://icb-scanpy.readthedocs-hosted.com/en/stable/)'s `AnnData` objects, and accepts input files in `.h5ad` or flat (`.csv`, `.tsv`) format. It also writes outputs to `.h5ad` files when called from the terminal.
 
----
 Installation via `pip` or from source requires a Fortran compiler. For Mac users, `brew install gcc` will take care of this.
 
 #### Install from PyPI:
