@@ -21,6 +21,7 @@ def recipe_dropkick(
     adata,
     X_final="raw_counts",
     filter=True,
+    min_genes=50,
     calc_metrics=True,
     mito_names="^mt-|^MT-",
     n_ambient=10,
@@ -35,7 +36,10 @@ def recipe_dropkick(
         adata (AnnData.AnnData): object with raw counts data in .X
         X_final (str): which normalization should be left in .X slot?
             ("raw_counts","arcsinh_norm","norm_counts")
-        filter (bool): remove cells and genes with zero total counts
+        filter (bool): remove cells with less than min_genes detected
+            and genes with zero total counts
+        min_genes (int): threshold for minimum genes detected. Default 50.
+            Ignored if filter==False.
         calc_metrics (bool): if False, do not calculate metrics in .obs/.var
         mito_names (str): substring encompassing mitochondrial gene names for
             calculation of mito expression
@@ -58,12 +62,12 @@ def recipe_dropkick(
     if filter:
         # remove cells and genes with zero total counts
         orig_shape = adata.shape
-        sc.pp.filter_cells(adata, min_genes=10)
+        sc.pp.filter_cells(adata, min_genes=min_genes)
         sc.pp.filter_genes(adata, min_counts=1)
         if adata.shape[0] != orig_shape[0]:
             print(
-                "Ignoring {} cells with zero total counts".format(
-                    orig_shape[0] - adata.shape[0]
+                "Ignoring {} cells with less than {} genes detected".format(
+                    orig_shape[0] - adata.shape[0], min_genes
                 )
             )
         if adata.shape[1] != orig_shape[1]:
@@ -253,6 +257,7 @@ def filter_thresh_obs(
 
 def dropkick(
     adata,
+    min_genes=50,
     mito_names="^mt-|^MT-",
     n_hvgs=2000,
     thresh_method="otsu",
@@ -273,6 +278,8 @@ def dropkick(
     Parameters:
         adata (anndata.AnnData): object containing unfiltered, raw scRNA-seq
             counts in .X layer
+        min_genes (int): threshold for minimum genes detected. Default 50.
+            Ignores all cells with less than min_genes (dropkick label = 0).
         mito_names (str): substring encompassing mitochondrial gene names for
             calculation of mito expression
         n_hvgs (int or None): number of HVGs to calculate using Seurat method
@@ -306,6 +313,7 @@ def dropkick(
         a,
         X_final="arcsinh_norm",
         filter=True,
+        min_genes=min_genes,
         calc_metrics=True,
         mito_names=mito_names,
         n_hvgs=n_hvgs,

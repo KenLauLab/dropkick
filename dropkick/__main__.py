@@ -56,6 +56,12 @@ def main():
         default=2000,
     )
     parser.add_argument(
+        "--min-genes",
+        type=int,
+        help="Minimum number of genes detected to keep cell. Default 50",
+        default=50,
+    )
+    parser.add_argument(
         "--seed", type=int, help="Random state for cross validation", default=18,
     )
     parser.add_argument(
@@ -123,6 +129,7 @@ def main():
 
     _ = dropkick(
         adata,
+        min_genes=args.min_genes,
         n_hvgs=args.n_hvgs,
         thresh_method=args.thresh_method,
         metrics=args.obs_cols,
