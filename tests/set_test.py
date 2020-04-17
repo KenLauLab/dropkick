@@ -4,26 +4,10 @@ Automated testing of cell filtering labels
 
 @author: C Heiser
 
-usage: qc_test.py [-h] -c COUNTS -l LABELS [LABELS ...]
+usage: qc_test.py [-h] -l LABELS [LABELS ...]
                   [-m METRICS [METRICS ...]] [--mito-names MITO_NAMES]
                   [--output-dir [OUTPUT_DIR]] [--cnmf]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -c COUNTS, --counts COUNTS
-                        Input (cell x gene) counts matrix as .h5ad file
-  -l LABELS [LABELS ...], --labels LABELS [LABELS ...]
-                        Labels defining cell sets to compare
-  -m METRICS [METRICS ...], --metrics METRICS [METRICS ...]
-                        Heuristics for comparing. Several can be specified
-                        with e.g. '--metrics arcsinh_total_counts
-                        arcsinh_n_genes_by_counts pct_counts_mito'
-  --mito-names MITO_NAMES
-                        Substring or regex defining mitochondrial genes
-  --output-dir [OUTPUT_DIR]
-                        Output directory. All output will be placed in
-                        [output-dir]/[name]...
-  --cnmf                Are cNMF usages available for testing?
+                  file
 """
 import argparse
 import os
@@ -295,8 +279,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "-c",
-        "--counts",
+        "file",
         type=str,
         help="Input (cell x gene) counts matrix as .h5ad file",
         required=True,
@@ -341,10 +324,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     # get name for saving outputs
-    name = os.path.splitext(os.path.basename(args.counts))[0]
+    name = os.path.splitext(os.path.basename(args.file))[0]
     # read in AnnData object
-    print("\nReading in counts data from {}".format(args.counts))
-    adata = sc.read(args.counts)
+    print("\nReading in counts data from {}".format(args.file))
+    adata = sc.read(args.file)
     # print regression model coefficient inventory to console
     coef_inventory(adata, n=10)
     # preprocess data and calculate metrics

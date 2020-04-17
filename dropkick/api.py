@@ -19,7 +19,6 @@ from .logistic import LogitNet
 
 def recipe_dropkick(
     adata,
-    X_final="raw_counts",
     filter=True,
     min_genes=50,
     calc_metrics=True,
@@ -27,6 +26,7 @@ def recipe_dropkick(
     n_ambient=10,
     target_sum=None,
     n_hvgs=2000,
+    X_final="raw_counts",
     verbose=True,
 ):
     """
@@ -34,30 +34,31 @@ def recipe_dropkick(
 
     Parameters:
         adata (AnnData.AnnData): object with raw counts data in .X
-        X_final (str): which normalization should be left in .X slot?
-            ("raw_counts","arcsinh_norm","norm_counts")
         filter (bool): remove cells with less than min_genes detected
             and genes with zero total counts
         min_genes (int): threshold for minimum genes detected. Default 50.
             Ignored if filter==False.
         calc_metrics (bool): if False, do not calculate metrics in .obs/.var
         mito_names (str): substring encompassing mitochondrial gene names for
-            calculation of mito expression
+            calculation of mito expression. Ignored if calc_metrics==False.
         n_ambient (int): number of ambient genes to call. top genes by cells.
+            Ignored if calc_metrics==False.
         target_sum (int): total sum of counts for each cell prior to arcsinh 
-            and log1p transformations; default None to use median counts.
-        n_hvgs (int or None): number of HVGs to calculate using Seurat method
-            if None, do not calculate HVGs
+            or log1p transformations; default None to use median counts.
+        n_hvgs (int or None): number of HVGs to calculate using Seurat method.
+            if None, do not calculate HVGs.
+        X_final (str): which normalization should be left in .X slot?
+            ("raw_counts","arcsinh_norm","norm_counts")
         verbose (bool): print updates to the console?
 
     Returns:
-        AnnData.AnnData: adata is edited in place to include:
-        - useful .obs and .var columns
-            ("total_counts", "pct_counts_mito", "n_genes_by_counts", etc.)
-        - raw counts (adata.layers["raw_counts"])
-        - normalized counts (adata.layers["norm_counts"])
-        - arcsinh transformation of normalized counts (adata.X)
-        - highly variable genes if desired (adata.var["highly_variable"])
+        adata (AnnData.AnnData): updated object includes:
+            - useful .obs and .var columns
+                ("total_counts", "pct_counts_mito", "n_genes_by_counts", etc.)
+            - raw counts (adata.layers["raw_counts"])
+            - normalized counts (adata.layers["norm_counts"])
+            - arcsinh transformation of normalized counts (adata.X)
+            - highly variable genes if desired (adata.var["highly_variable"])
     """
     if filter:
         # remove cells and genes with zero total counts
@@ -86,18 +87,21 @@ def recipe_dropkick(
         # identify mitochondrial genes
         adata.var["mito"] = adata.var_names.str.contains(mito_names)
         # identify putative ambient genes by lowest dropout pct (top n_ambient)
-        adata.var["ambient"] = np.array(
-            adata.X.astype(bool).sum(axis=0) / adata.n_obs
+        adata.var["dropout_rate"] = np.array(
+            1 - (adata.X.astype(bool).sum(axis=0) / adata.n_obs)
         ).squeeze()
         lowest_dropout = round(
-            (1 - adata.var.ambient.nlargest(n=n_ambient).max()) * 100, 3
+            adata.var.dropout_rate.nsmallest(n=n_ambient).min() * 100, 3
         )
         highest_dropout = round(
-            (1 - adata.var.ambient.nlargest(n=n_ambient).min()) * 100, 3
+            adata.var.dropout_rate.nsmallest(n=n_ambient).max() * 100, 3
         )
         adata.var["ambient"] = (
-            adata.var.ambient >= adata.var.ambient.nlargest(n=n_ambient).min()
+            adata.var.dropout_rate
+            <= adata.var.dropout_rate.nsmallest(n=n_ambient).max()
         )
+        # reorder genes by dropout rate
+        adata = adata[:, np.argsort(adata.var.dropout_rate)].copy()
         if verbose:
             print(
                 "Top {} ambient genes have dropout rates between {} and {} percent:\n\t{}".format(
@@ -117,21 +121,22 @@ def recipe_dropkick(
             adata.obs["n_genes_by_counts"]
         )
 
-    # log1p transform (adata.layers["log1p_norm"])
+    # normalize counts (adata.layers["norm_counts"])
     sc.pp.normalize_total(adata, target_sum=target_sum, layers=None, layer_norm=None)
     adata.layers["norm_counts"] = adata.X.copy()  # save to .layers
-    sc.pp.log1p(adata)
-    adata.layers["log1p_norm"] = adata.X.copy()  # save to .layers
 
     # HVGs
     if n_hvgs is not None:
         if verbose:
             print("Determining {} highly variable genes".format(n_hvgs))
+        # log1p transform for HVGs (adata.layers["log1p_norm"])
+        sc.pp.log1p(adata)
+        adata.layers["log1p_norm"] = adata.X.copy()  # save to .layers
         sc.pp.highly_variable_genes(
             adata, n_top_genes=n_hvgs, n_bins=20, flavor="seurat"
         )
 
-    # arcsinh-transform normalized counts to leave in .X
+    # arcsinh-transform normalized counts
     adata.X = np.arcsinh(adata.layers["norm_counts"])
     sc.pp.scale(adata)  # scale genes for feeding into model
     adata.layers[
@@ -140,6 +145,8 @@ def recipe_dropkick(
 
     # set .X as desired for downstream processing; default raw_counts
     adata.X = adata.layers[X_final].copy()
+
+    return adata
 
 
 def auto_thresh_obs(
@@ -259,14 +266,12 @@ def dropkick(
     adata,
     min_genes=50,
     mito_names="^mt-|^MT-",
+    n_ambient=10,
     n_hvgs=2000,
     thresh_method="otsu",
     metrics=["arcsinh_n_genes_by_counts", "pct_counts_ambient",],
     directions=["above", "below"],
     alphas=[0.1],
-    n_lambda=100,
-    cut_point=1,
-    n_splits=5,
     max_iter=1000,
     n_jobs=-1,
     seed=18,
@@ -282,6 +287,7 @@ def dropkick(
             Ignores all cells with less than min_genes (dropkick label = 0).
         mito_names (str): substring encompassing mitochondrial gene names for
             calculation of mito expression
+        n_ambient (int): number of ambient genes to call. top genes by cells.
         n_hvgs (int or None): number of HVGs to calculate using Seurat method
             if None, do not calculate HVGs
         thresh_method (str): one of 'otsu' (default), 'li', or 'mean'
@@ -290,11 +296,6 @@ def dropkick(
             direction to keep (label=1)
         alphas (tuple of int): alpha values to test using glmnet with n-fold
             cross validation
-        n_lambda (int): number of lambda values to test in glmnet
-        cut_point (float): The cut point to use for selecting lambda_best.
-            arg_max lambda
-            cv_score(lambda)>=cv_score(lambda_max)-cut_point*standard_error(lambda_max)
-        n_splits (int): number of splits for n-fold cross validation
         max_iter (int): number of iterations for glmnet optimization
         n_jobs (int): number of threads for cross validation by glmnet
         seed (int): random state for cross validation by glmnet
@@ -304,21 +305,22 @@ def dropkick(
         adata_thresh (dict): dictionary of automated thresholds on heuristics
         rc (LogisticRegression): trained logistic regression classifier
 
-        updated adata inplace to include 'train', 'dropkick_score', and
+        updates adata inplace to include 'train', 'dropkick_score', and
             'dropkick_label' columns in .obs
     """
     # 0) preprocess counts and calculate required QC metrics
     a = adata.copy()  # make copy of anndata before manipulating
-    recipe_dropkick(
+    a = recipe_dropkick(
         a,
-        X_final="arcsinh_norm",
         filter=True,
         min_genes=min_genes,
         calc_metrics=True,
         mito_names=mito_names,
-        n_hvgs=n_hvgs,
+        n_ambient=n_ambient,
         target_sum=None,
-        verbose=True,
+        n_hvgs=n_hvgs,
+        X_final="arcsinh_norm",
+        verbose=verbose,
     )
 
     # 1) threshold chosen heuristics using automated method
@@ -346,9 +348,9 @@ def dropkick(
             # print("Training LogitNet with alpha: {}".format(alpha), end="  ")
             rc = LogitNet(
                 alpha=alpha,
-                n_lambda=n_lambda,
-                cut_point=cut_point,
-                n_splits=n_splits,
+                n_lambda=100,
+                cut_point=1,
+                n_splits=5,
                 max_iter=max_iter,
                 n_jobs=n_jobs,
                 random_state=seed,
@@ -374,9 +376,9 @@ def dropkick(
         # 3.2) train model with single alpha value
         rc_ = LogitNet(
             alpha=alphas[0],
-            n_lambda=n_lambda,
-            cut_point=cut_point,
-            n_splits=n_splits,
+            n_lambda=100,
+            cut_point=1,
+            n_splits=5,
             max_iter=max_iter,
             n_jobs=n_jobs,
             random_state=seed,
@@ -402,6 +404,7 @@ def dropkick(
     # 5) save model hyperparameters in .uns
     adata.uns["dropkick_thresholds"] = adata_thresh
     adata.uns["dropkick_args"] = {
+        "n_ambient": n_ambient,
         "n_hvgs": n_hvgs,
         "thresh_method": thresh_method,
         "metrics": metrics,
@@ -413,9 +416,6 @@ def dropkick(
         "coef_path": rc_.coef_path_.squeeze().T,
         "cv_mean_score": rc_.cv_mean_score_,
         "cv_standard_error": rc_.cv_standard_error_,
-        "n_lambda": n_lambda,
-        "cut_point": cut_point,
-        "n_splits": n_splits,
         "max_iter": max_iter,
         "seed": seed,
     }  # save command-line arguments to .uns for reference
@@ -467,13 +467,41 @@ def coef_plot(adata, show=True):
     # plot coefficient values versus log(lambda) on left y-axis
     ax.set_title("Dropkick Coefficients")
     ax.set_xlabel("Log (lambda)")
-    ax.set_ylabel("Coefficient Value", color="g")
+    ax.set_ylabel("Coefficient Value")
     ax.plot(
         np.log(adata.uns["dropkick_args"]["lambda_path"]),
         adata.uns["dropkick_args"]["coef_path"],
         alpha=0.5,
     )
-    ax.tick_params(axis="y", labelcolor="g")
+    # plot top three genes by coefficient value
+    [
+        ax.text(
+            x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
+            y=adata.var.dropkick_coef.max() + 0.15 - 0.05 * x,
+            s=" "
+            + adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"]
+            .nlargest(3)
+            .index[x],
+            fontsize=9,
+            color="g",
+        )
+        for x in range(3)
+    ]
+    # plot bottom three genes by coefficient value
+    [
+        ax.text(
+            x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
+            y=adata.var.dropkick_coef.min() - 0.20 + 0.05 * x,
+            s=" "
+            + adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"]
+            .nsmallest(3)
+            .index[x],
+            fontsize=9,
+            color="r",
+        )
+        for x in range(3)
+    ]
+
     # plot CV scores versus log(lambda) on right y-axis
     ax2 = ax.twinx()
     ax2.set_ylabel("CV Mean Score", color="b")
