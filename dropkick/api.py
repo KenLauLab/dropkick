@@ -136,6 +136,7 @@ def recipe_dropkick(
 
     # normalize counts before transforming
     sc.pp.normalize_total(adata, target_sum=target_sum, layers=None, layer_norm=None)
+    adata.layers["norm_counts"] = adata.X.copy()
 
     # HVGs
     if n_hvgs is not None:
@@ -154,6 +155,7 @@ def recipe_dropkick(
     adata.layers[
         "arcsinh_norm"
     ] = adata.X.copy()  # save arcsinh scaled counts in .layers
+    del adata.layers["norm_counts"]  # remove unneeded normalized counts
 
     # set .X as desired for downstream processing; default raw_counts
     if (X_final != "raw_counts") & verbose:
