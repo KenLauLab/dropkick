@@ -44,7 +44,7 @@ def dropout_plot(adata, show=False, ax=None):
         # otherwise, plot first ten, with indicator that there's more
         [
             ax.text(
-                x=1, y=0.9 - 0.05 * x, s=a.var_names[adata.var.ambient][x], fontsize=10
+                x=1, y=0.9 - 0.05 * x, s=adata.var_names[adata.var.ambient][x], fontsize=10
             )
             for x in range(10)
         ]

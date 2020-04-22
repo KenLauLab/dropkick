@@ -47,8 +47,8 @@ def recipe_dropkick(
             or log1p transformations; default None to use median counts.
         n_hvgs (int or None): number of HVGs to calculate using Seurat method.
             if None, do not calculate HVGs.
-        X_final (str): which normalization should be left in .X slot?
-            ("raw_counts","arcsinh_norm","norm_counts")
+        X_final (str): which normalization layer should be left in .X slot?
+            ("raw_counts","arcsinh_norm","log1p_norm")
         verbose (bool): print updates to the console?
 
     Returns:
@@ -56,8 +56,7 @@ def recipe_dropkick(
             - useful .obs and .var columns
                 ("total_counts", "pct_counts_mito", "n_genes_by_counts", etc.)
             - raw counts (adata.layers["raw_counts"])
-            - normalized counts (adata.layers["norm_counts"])
-            - arcsinh transformation of normalized counts (adata.X)
+            - arcsinh-transformed normalized counts (adata.layers["arcsinh_norm"])
             - highly variable genes if desired (adata.var["highly_variable"])
     """
     if filter:
@@ -65,43 +64,42 @@ def recipe_dropkick(
         orig_shape = adata.shape
         sc.pp.filter_cells(adata, min_genes=min_genes)
         sc.pp.filter_genes(adata, min_counts=1)
-        if adata.shape[0] != orig_shape[0]:
-            print(
-                "Ignoring {} cells with less than {} genes detected".format(
-                    orig_shape[0] - adata.shape[0], min_genes
+        if verbose:
+            if adata.shape[0] != orig_shape[0]:
+                print(
+                    "Ignoring {} cells with less than {} genes detected".format(
+                        orig_shape[0] - adata.shape[0], min_genes
+                    )
                 )
-            )
-        if adata.shape[1] != orig_shape[1]:
-            print(
-                "Ignoring {} genes with zero total counts".format(
-                    orig_shape[1] - adata.shape[1]
+            if adata.shape[1] != orig_shape[1]:
+                print(
+                    "Ignoring {} genes with zero total counts".format(
+                        orig_shape[1] - adata.shape[1]
+                    )
                 )
-            )
 
     # store raw counts before manipulation
     adata.layers["raw_counts"] = adata.X.copy()
 
     if calc_metrics:
-        if verbose:
-            print("Calculating metrics:")
         # identify mitochondrial genes
         adata.var["mito"] = adata.var_names.str.contains(mito_names)
         # identify putative ambient genes by lowest dropout pct (top n_ambient)
-        adata.var["dropout_rate"] = np.array(
+        adata.var["pct_dropout_by_counts"] = np.array(
             1 - (adata.X.astype(bool).sum(axis=0) / adata.n_obs)
         ).squeeze()
         lowest_dropout = round(
-            adata.var.dropout_rate.nsmallest(n=n_ambient).min() * 100, 3
+            adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).min() * 100, 3
         )
         highest_dropout = round(
-            adata.var.dropout_rate.nsmallest(n=n_ambient).max() * 100, 3
+            adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max() * 100, 3
         )
         adata.var["ambient"] = (
             adata.var.dropout_rate
-            <= adata.var.dropout_rate.nsmallest(n=n_ambient).max()
+            <= adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max()
         )
         # reorder genes by dropout rate
-        adata = adata[:, np.argsort(adata.var.dropout_rate)].copy()
+        adata = adata[:, np.argsort(adata.var.pct_dropout_by_counts)].copy()
         if verbose:
             print(
                 "Top {} ambient genes have dropout rates between {} and {} percent:\n\t{}".format(
@@ -115,15 +113,20 @@ def recipe_dropkick(
         sc.pp.calculate_qc_metrics(
             adata, qc_vars=["mito", "ambient"], inplace=True, percent_top=None
         )
+        # remove pesky unneeded columns from .obs and .var
+        adata.obs.drop(columns=adata.obs.columns[adata.obs.columns.str.startswith("log1p_")].union(adata.obs.columns[adata.obs.columns.str.contains("total_counts_")]), inplace=True)
+        adata.var.drop(columns=adata.var.columns[adata.var.columns.str.startswith("log1p_")], inplace=True)
         # other arcsinh-transformed metrics
         adata.obs["arcsinh_total_counts"] = np.arcsinh(adata.obs["total_counts"])
         adata.obs["arcsinh_n_genes_by_counts"] = np.arcsinh(
             adata.obs["n_genes_by_counts"]
         )
+        # make sure everything went well...
+        np.testing.assert_approx_equal(adata.var.pct_dropout_by_counts.max(), highest_dropout, significant=7, verbose=True)
+        np.testing.assert_approx_equal(adata.var.pct_dropout_by_counts.min(), lowest_dropout, significant=7, verbose=True)
 
-    # normalize counts (adata.layers["norm_counts"])
+    # normalize counts before transforming
     sc.pp.normalize_total(adata, target_sum=target_sum, layers=None, layer_norm=None)
-    adata.layers["norm_counts"] = adata.X.copy()  # save to .layers
 
     # HVGs
     if n_hvgs is not None:
@@ -136,7 +139,7 @@ def recipe_dropkick(
             adata, n_top_genes=n_hvgs, n_bins=20, flavor="seurat"
         )
 
-    # arcsinh-transform normalized counts
+    # arcsinh-transform normalized counts (adata.layers["arcsinh_norm"])
     adata.X = np.arcsinh(adata.layers["norm_counts"])
     sc.pp.scale(adata)  # scale genes for feeding into model
     adata.layers[
@@ -144,6 +147,8 @@ def recipe_dropkick(
     ] = adata.X.copy()  # save arcsinh scaled counts in .layers
 
     # set .X as desired for downstream processing; default raw_counts
+    if (X_final != "raw_counts") & verbose:
+        print("Setting {} layer to .X".format(X_final))
     adata.X = adata.layers[X_final].copy()
 
     return adata
