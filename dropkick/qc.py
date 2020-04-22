@@ -32,13 +32,13 @@ def dropout_plot(adata, show=False, ax=None):
             np.argsort(adata.var.pct_dropout_by_counts)
         ].values
     )
-    ax.text(x=1, y=0.97, s="Ambient Genes:", fontweight="bold", fontsize=10)
+    ax.text(x=1, y=97, s="Ambient Genes:", fontweight="bold", fontsize=10)
     if adata.var.ambient.sum() < 14:
         # plot all ambient gene names if they'll fit
         [
             ax.text(
                 x=1,
-                y=0.9 - 0.05 * x,
+                y=90 - 5 * x,
                 s=adata.var_names[adata.var.ambient][x],
                 fontsize=10,
             )
@@ -49,13 +49,13 @@ def dropout_plot(adata, show=False, ax=None):
         [
             ax.text(
                 x=1,
-                y=0.9 - 0.05 * x,
+                y=90 - 5 * x,
                 s=adata.var_names[adata.var.ambient][x],
                 fontsize=10,
             )
             for x in range(10)
         ]
-        ax.text(x=1, y=0.4, s=". . .", fontweight="bold", fontsize=10)
+        ax.text(x=1, y=40, s=". . .", fontweight="bold", fontsize=10)
     ax.set_xscale("log")
     ax.set_ylabel("Dropout Rate (%)")
     ax.set_xlabel("Ranked Genes")
