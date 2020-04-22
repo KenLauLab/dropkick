@@ -86,18 +86,15 @@ def recipe_dropkick(
         adata.var["mito"] = adata.var_names.str.contains(mito_names)
         # identify putative ambient genes by lowest dropout pct (top n_ambient)
         adata.var["pct_dropout_by_counts"] = np.array(
-            1 - (adata.X.astype(bool).sum(axis=0) / adata.n_obs)
+            (1 - (adata.X.astype(bool).sum(axis=0) / adata.n_obs)) * 100
         ).squeeze()
         lowest_dropout = round(
-            adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).min() * 100, 3
+            adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).min(), 3
         )
         highest_dropout = round(
-            adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max() * 100, 3
+            adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max(), 3
         )
-        adata.var["ambient"] = (
-            adata.var.pct_dropout_by_counts
-            <= adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max()
-        )
+        adata.var["ambient"] = adata.var.pct_dropout_by_counts <= highest_dropout
         # reorder genes by dropout rate
         adata = adata[:, np.argsort(adata.var.pct_dropout_by_counts)].copy()
         if verbose:
@@ -114,16 +111,28 @@ def recipe_dropkick(
             adata, qc_vars=["mito", "ambient"], inplace=True, percent_top=None
         )
         # remove pesky unneeded columns from .obs and .var
-        adata.obs.drop(columns=adata.obs.columns[adata.obs.columns.str.startswith("log1p_")].union(adata.obs.columns[adata.obs.columns.str.contains("total_counts_")]), inplace=True)
-        adata.var.drop(columns=adata.var.columns[adata.var.columns.str.startswith("log1p_")], inplace=True)
+        adata.obs.drop(
+            columns=adata.obs.columns[adata.obs.columns.str.startswith("log1p_")].union(
+                adata.obs.columns[adata.obs.columns.str.contains("total_counts_")]
+            ),
+            inplace=True,
+        )
+        adata.var.drop(
+            columns=adata.var.columns[adata.var.columns.str.startswith("log1p_")],
+            inplace=True,
+        )
         # other arcsinh-transformed metrics
         adata.obs["arcsinh_total_counts"] = np.arcsinh(adata.obs["total_counts"])
         adata.obs["arcsinh_n_genes_by_counts"] = np.arcsinh(
             adata.obs["n_genes_by_counts"]
         )
         # make sure everything went well...
-        np.testing.assert_approx_equal(adata.var.pct_dropout_by_counts.max(), highest_dropout, significant=7, verbose=True)
-        np.testing.assert_approx_equal(adata.var.pct_dropout_by_counts.min(), lowest_dropout, significant=7, verbose=True)
+        np.testing.assert_approx_equal(
+            adata.var.pct_dropout_by_counts.min(),
+            lowest_dropout,
+            significant=7,
+            verbose=True,
+        )
 
     # normalize counts before transforming
     sc.pp.normalize_total(adata, target_sum=target_sum, layers=None, layer_norm=None)

@@ -27,7 +27,11 @@ def dropout_plot(adata, show=False, ax=None):
     """
     if not ax:
         fig, ax = plt.subplots(figsize=(4, 4))
-    ax.plot(adata.var.pct_dropout_by_counts[np.argsort(adata.var.pct_dropout_by_counts)].values)
+    ax.plot(
+        adata.var.pct_dropout_by_counts[
+            np.argsort(adata.var.pct_dropout_by_counts)
+        ].values
+    )
     ax.text(x=1, y=0.97, s="Ambient Genes:", fontweight="bold", fontsize=10)
     if adata.var.ambient.sum() < 14:
         # plot all ambient gene names if they'll fit
@@ -44,7 +48,10 @@ def dropout_plot(adata, show=False, ax=None):
         # otherwise, plot first ten, with indicator that there's more
         [
             ax.text(
-                x=1, y=0.9 - 0.05 * x, s=adata.var_names[adata.var.ambient][x], fontsize=10
+                x=1,
+                y=0.9 - 0.05 * x,
+                s=adata.var_names[adata.var.ambient][x],
+                fontsize=10,
             )
             for x in range(10)
         ]
