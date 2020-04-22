@@ -95,7 +95,7 @@ def recipe_dropkick(
             adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max() * 100, 3
         )
         adata.var["ambient"] = (
-            adata.var.dropout_rate
+            adata.var.pct_dropout_by_counts
             <= adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max()
         )
         # reorder genes by dropout rate
