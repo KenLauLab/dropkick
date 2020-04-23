@@ -282,6 +282,8 @@ class LogitNet(BaseEstimator):
                 n_jobs=self.n_jobs,
                 verbose=self.verbose,
             )
+            print(cv_scores)
+            print(hvgs)
 
             self.cv_mean_score_ = np.atleast_1d(np.mean(cv_scores, axis=0))
             self.cv_standard_error_ = np.atleast_1d(stats.sem(cv_scores))
