@@ -77,6 +77,8 @@ def recipe_dropkick(
                         orig_shape[1] - adata.shape[1]
                     )
                 )
+        adata.obs.drop(columns=["n_genes"], inplace=True)
+        adata.var.drop(columns=["n_counts"], inplace=True)
 
     # store raw counts before manipulation
     adata.layers["raw_counts"] = adata.X.copy()
@@ -158,8 +160,7 @@ def recipe_dropkick(
 
     # remove unneeded stuff
     del adata.layers["norm_counts"]
-    adata.obs.drop(columns=["n_genes"])
-    adata.var.drop(columns=["n_counts","dispersions","dispersions_norm"])
+    adata.var.drop(columns=["dispersions","dispersions_norm"], inplace=True)
 
     # set .X as desired for downstream processing; default raw_counts
     if (X_final != "raw_counts") & verbose:

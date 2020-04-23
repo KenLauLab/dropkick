@@ -166,7 +166,7 @@ def main():
         a = (
             adata.copy()
         )  # copy anndata to re-calculate metrics for plotting using all barcodes
-        recipe_dropkick(a, filter=False)
+        recipe_dropkick(a, filter=False, n_hvgs=None)
         _ = plot_thresh_obs(a, adata.uns["dropkick_thresholds"], bins=40, show=False)
         plt.savefig(
             "{}/{}_{}_thresholds.png".format(args.output_dir, name, args.thresh_method)
