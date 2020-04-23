@@ -12,7 +12,12 @@ import matplotlib.pyplot as plt
 import scanpy as sc
 import time
 import threading
-from skimage.filters import threshold_li, threshold_otsu, threshold_mean
+from skimage.filters import (
+    threshold_li,
+    threshold_otsu,
+    threshold_mean,
+    threshold_multiotsu,
+)
 
 from .logistic import LogitNet
 
@@ -263,9 +268,13 @@ def filter_thresh_obs(
             if directions[i] == "above":
                 # use first threshold [0] as minimum for filtering
                 if inclusive:
-                    adata = adata[adata.obs[obs_cols[i]] > thresholds[obs_cols[i]][0], :].copy()
+                    adata = adata[
+                        adata.obs[obs_cols[i]] > thresholds[obs_cols[i]][0], :
+                    ].copy()
                 else:
-                    adata = adata[adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]][0], :].copy()
+                    adata = adata[
+                        adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]][0], :
+                    ].copy()
                 if verbose:
                     print(
                         "Ignoring {} barcodes below first threshold on {}".format(
@@ -275,9 +284,13 @@ def filter_thresh_obs(
             elif directions[i] == "below":
                 # use first threshold [0] as maximum for filtering
                 if inclusive:
-                    adata = adata[adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]][1], :].copy()
+                    adata = adata[
+                        adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]][1], :
+                    ].copy()
                 else:
-                    adata = adata[adata.obs[obs_cols[i]] < thresholds[obs_cols[i]][1], :].copy()
+                    adata = adata[
+                        adata.obs[obs_cols[i]] < thresholds[obs_cols[i]][1], :
+                    ].copy()
                 if verbose:
                     print(
                         "Ignoring {} barcodes above second threshold on {}".format(
@@ -314,7 +327,7 @@ def filter_thresh_obs(
                     ] = 0
 
         else:
-                # if single threshold, just assign labels
+            # if single threshold, just assign labels
             if directions[i] == "above":
                 if inclusive:
                     adata.obs.loc[
@@ -352,7 +365,7 @@ def dropkick(
     n_ambient=10,
     n_hvgs=2000,
     metrics=["arcsinh_n_genes_by_counts", "pct_counts_ambient",],
-    thresh_methods=["multiotsu","otsu"],
+    thresh_methods=["multiotsu", "otsu"],
     directions=["above", "below"],
     alphas=[0.1],
     max_iter=1000,
@@ -482,7 +495,9 @@ def dropkick(
         adata.obs.loc[a.obs_names, metric] = a.obs[metric]
         adata.obs[metric].fillna(0, inplace=True)  # fill ignored cells with zeros
     # add dropkick coefficients to genes used in model (hvgs from `a`)
-    adata.var.loc[a.var_names[a.var.highly_variable], "dropkick_coef"] = rc_.coef_.squeeze()
+    adata.var.loc[
+        a.var_names[a.var.highly_variable], "dropkick_coef"
+    ] = rc_.coef_.squeeze()
 
     # 5) save model hyperparameters in .uns
     adata.uns["dropkick_thresholds"] = adata_thresh

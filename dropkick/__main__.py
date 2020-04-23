@@ -169,18 +169,14 @@ def main():
         )
         # generate plot of chosen training thresholds on heuristics
         print(
-            "Saving threshold plots to {}/{}_thresh.png".format(
-                args.output_dir, name
-            )
+            "Saving threshold plots to {}/{}_thresh.png".format(args.output_dir, name)
         )
         a = (
             adata.copy()
         )  # copy anndata to re-calculate metrics for plotting using all barcodes
         recipe_dropkick(a, filter=False, n_hvgs=None, verbose=False)
         _ = plot_thresh_obs(a, adata.uns["dropkick_thresholds"], bins=40, show=False)
-        plt.savefig(
-            "{}/{}_thresh.png".format(args.output_dir, name)
-        )
+        plt.savefig("{}/{}_thresh.png".format(args.output_dir, name))
         # generate plot of dropkick coefficient values and CV scores vs tested lambda_path
         print("Saving coefficient plot to {}/{}_coef.png".format(args.output_dir, name))
         _ = coef_plot(adata, show=False)
