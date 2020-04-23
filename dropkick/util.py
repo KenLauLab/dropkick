@@ -49,6 +49,7 @@ def _score_lambda_path(
     -------
     scores : array, shape (n_lambda,)
         Scores for each value of lambda over all cv folds.
+    hvgs : index, names of hvgs selected from training set
     """
     X = adata.X.copy()  # take .X layer as input features
     scorer = check_scoring(est, scoring)
@@ -63,7 +64,7 @@ def _score_lambda_path(
         action = "always" if verbose else "ignore"
         warnings.simplefilter(action, UndefinedMetricWarning)
 
-        scores = Parallel(n_jobs=n_jobs, verbose=verbose, backend="threading")(
+        scores, hvgs = Parallel(n_jobs=n_jobs, verbose=verbose, backend="threading")(
             delayed(_fit_and_score)(
                 est,
                 scorer,
@@ -79,7 +80,7 @@ def _score_lambda_path(
             for (train_idx, test_idx) in cv_split
         )
 
-    return scores
+    return scores, hvgs
 
 
 def _fit_and_score(
@@ -135,6 +136,7 @@ def _fit_and_score(
     -------
     scores : array, shape (n_lambda,)
         Scores for each value of lambda for a single cv fold.
+    hvgs : index, names of hvgs selected from training set
     """
     a = adata[train_inx, :].copy()  # select training set for fold
     a.X = a.layers["log1p_norm"].copy()  # use log1p-transformed counts to calc HVGs
@@ -150,13 +152,13 @@ def _fit_and_score(
     )
 
     lamb = np.clip(score_lambda_path, m.lambda_path_[-1], m.lambda_path_[0])
-    return scorer(m, X[test_inx, :], y[test_inx], lamb=lamb)
+    return scorer(m, X[test_inx, :], y[test_inx], lamb=lamb), a.var_names[a.var.highly_variable]
 
 
 def _fix_lambda_path(lambda_path):
     """
     Replace the first value in lambda_path (+inf) with something more
-    reasonable. The method below matches what is done in the R/glmnent wrapper.
+    reasonable. The method below matches what is done in the R/glmnet wrapper.
     """
     if lambda_path.shape[0] > 2:
         lambda_0 = math.exp(2 * math.log(lambda_path[1]) - math.log(lambda_path[2]))

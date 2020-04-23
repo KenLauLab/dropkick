@@ -166,20 +166,28 @@ def recipe_dropkick(
 
 
 def auto_thresh_obs(
-    adata, obs_cols=["arcsinh_n_genes_by_counts", "pct_counts_ambient"], method="otsu",
+    adata,
+    obs_cols=["arcsinh_n_genes_by_counts","pct_counts_ambient"],
+    #double=["arcsinh_n_genes_by_counts"],
+    #single=["pct_counts_ambient"],
+    method="otsu",
 ):
     """
     automated thresholding on metrics in adata.obs
 
     Parameters:
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
-        obs_cols (list of str): name of column(s) to threshold from adata.obs
+        double (list of str): name of column(s) to double threshold from adata.obs
+        single (list of str): name of column(s) to single threshold from adata.obs
         method (str): one of 'otsu' (default), 'li', or 'mean'
 
     Returns:
         thresholds (dict): keys are obs_cols and values are threshold results
     """
     thresholds = dict.fromkeys(obs_cols)  # initiate output dictionary
+    #for col in double:
+    #    tmp = np.array(adata.obs[col])
+    #    thresholds[col] = threshold_multiotsu(tmp)
     for col in obs_cols:
         tmp = np.array(adata.obs[col])
         if method == "otsu":
@@ -215,6 +223,7 @@ def plot_thresh_obs(adata, thresholds, bins=40, show=True):
     axes[0].set_ylabel("cells")
     for i in range(len(thresholds)):
         axes[i].hist(adata.obs[list(thresholds.keys())[i]], bins=bins)
+        [plt.axvline(_x, color="r") for _x in list(thresholds.values())[i]]
         axes[i].axvline(list(thresholds.values())[i], color="r")
         axes[i].set_title(list(thresholds.keys())[i])
     fig.tight_layout()
@@ -353,7 +362,7 @@ def dropkick(
         name="train",
     )
 
-    X = a.X[:, a.var.highly_variable].copy()  # final X is HVGs
+    X = a.X.copy()  # arcsinh-transformed, scaled counts
     y = a.obs["train"].copy(deep=True)  # final y is "train" labels from step 2
     print("Training LogitNet with alphas: {}".format(alphas))
 
@@ -406,6 +415,8 @@ def dropkick(
 
     # 4) use model to assign scores and labels to original adata
     print("Assigning scores and labels")
+    # feature select with hvgs_best_
+    X = a.X[:, rc_.hvgs_best_].copy()
     adata.obs.loc[a.obs_names, "dropkick_score"] = rc_.predict_proba(X)[:, 1]
     adata.obs.dropkick_score.fillna(0, inplace=True)  # fill ignored cells with zeros
     adata.obs.loc[a.obs_names, "dropkick_label"] = rc_.predict(X)
@@ -413,9 +424,7 @@ def dropkick(
     for metric in metrics:
         adata.obs.loc[a.obs_names, metric] = a.obs[metric]
         adata.obs[metric].fillna(0, inplace=True)  # fill ignored cells with zeros
-    adata.var.loc[
-        a.var_names[a.var.highly_variable], "dropkick_coef"
-    ] = rc_.coef_.squeeze()
+    adata.var.loc[rc_.hvgs_best_, "dropkick_coef"] = rc_.coef_.squeeze()
 
     # 5) save model hyperparameters in .uns
     adata.uns["dropkick_thresholds"] = adata_thresh

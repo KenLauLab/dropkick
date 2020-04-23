@@ -199,11 +199,13 @@ class LogitNet(BaseEstimator):
 
         Parameters
         ----------
-        X : array, shape (n_samples, n_features)
-            Input features
+        adata : anndata.AnnData, shape (n_samples, n_features)
+            Input features in .X
 
-        Y : array, shape (n_samples,)
+        y : array, shape (n_samples,)
             Target values
+
+        n_hvgs : int, number of highly-variable genes to feature-select
 
         sample_weight : array, shape (n_samples,)
             Optional weight vector for observations
@@ -269,7 +271,7 @@ class LogitNet(BaseEstimator):
                 n_splits=self.n_splits, shuffle=True, random_state=self.random_state
             )
 
-            cv_scores = _score_lambda_path(
+            cv_scores, hvgs = _score_lambda_path(
                 self,
                 adata,
                 y,
@@ -300,6 +302,8 @@ class LogitNet(BaseEstimator):
             self.intercept_ = self.intercept_path_[..., self.lambda_best_inx_].squeeze()
             if self.intercept_.shape == ():  # convert 0d array to scalar
                 self.intercept_ = float(self.intercept_)
+
+            self.hvgs_best_ = hvgs[self.lambda_best_inx_]
 
         return self
 
