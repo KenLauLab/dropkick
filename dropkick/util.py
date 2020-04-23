@@ -64,20 +64,21 @@ def _score_lambda_path(
         action = "always" if verbose else "ignore"
         warnings.simplefilter(action, UndefinedMetricWarning)
 
-        scores, hvgs = zip(*Parallel(n_jobs=n_jobs, verbose=verbose, backend="threading")(
-            delayed(_fit_and_score)(
-                est,
-                scorer,
-                adata,
-                y,
-                n_hvgs,
-                sample_weight,
-                relative_penalties,
-                est.lambda_path_,
-                train_idx,
-                test_idx,
-            )
-            for (train_idx, test_idx) in cv_split
+        scores, hvgs = zip(
+            *Parallel(n_jobs=n_jobs, verbose=verbose, backend="threading")(
+                delayed(_fit_and_score)(
+                    est,
+                    scorer,
+                    adata,
+                    y,
+                    n_hvgs,
+                    sample_weight,
+                    relative_penalties,
+                    est.lambda_path_,
+                    train_idx,
+                    test_idx,
+                )
+                for (train_idx, test_idx) in cv_split
             )
         )
 
@@ -153,7 +154,10 @@ def _fit_and_score(
     )
 
     lamb = np.clip(score_lambda_path, m.lambda_path_[-1], m.lambda_path_[0])
-    return scorer(m, X[test_inx, :], y[test_inx], lamb=lamb), np.where(a.var.highly_variable)[0]
+    return (
+        scorer(m, X[test_inx, :], y[test_inx], lamb=lamb),
+        np.where(a.var.highly_variable)[0],
+    )
 
 
 def _fix_lambda_path(lambda_path):

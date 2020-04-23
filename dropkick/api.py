@@ -150,6 +150,7 @@ def recipe_dropkick(
         sc.pp.highly_variable_genes(
             adata, n_top_genes=n_hvgs, n_bins=20, flavor="seurat"
         )
+        adata.var.drop(columns=["dispersions", "dispersions_norm"], inplace=True)
 
     # arcsinh-transform normalized counts (adata.layers["arcsinh_norm"])
     adata.X = np.arcsinh(adata.layers["norm_counts"])
@@ -157,10 +158,8 @@ def recipe_dropkick(
     adata.layers[
         "arcsinh_norm"
     ] = adata.X.copy()  # save arcsinh scaled counts in .layers
-
     # remove unneeded stuff
     del adata.layers["norm_counts"]
-    adata.var.drop(columns=["dispersions","dispersions_norm"], inplace=True)
 
     # set .X as desired for downstream processing; default raw_counts
     if (X_final != "raw_counts") & verbose:
@@ -172,9 +171,9 @@ def recipe_dropkick(
 
 def auto_thresh_obs(
     adata,
-    obs_cols=["arcsinh_n_genes_by_counts","pct_counts_ambient"],
-    #double=["arcsinh_n_genes_by_counts"],
-    #single=["pct_counts_ambient"],
+    obs_cols=["arcsinh_n_genes_by_counts", "pct_counts_ambient"],
+    # double=["arcsinh_n_genes_by_counts"],
+    # single=["pct_counts_ambient"],
     method="otsu",
 ):
     """
@@ -190,7 +189,7 @@ def auto_thresh_obs(
         thresholds (dict): keys are obs_cols and values are threshold results
     """
     thresholds = dict.fromkeys(obs_cols)  # initiate output dictionary
-    #for col in double:
+    # for col in double:
     #    tmp = np.array(adata.obs[col])
     #    thresholds[col] = threshold_multiotsu(tmp)
     for col in obs_cols:

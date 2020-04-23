@@ -37,10 +37,7 @@ def dropout_plot(adata, show=False, ax=None):
         # plot all ambient gene names if they'll fit
         [
             ax.text(
-                x=1,
-                y=90 - 5 * x,
-                s=adata.var_names[adata.var.ambient][x],
-                fontsize=10,
+                x=1, y=90 - 5 * x, s=adata.var_names[adata.var.ambient][x], fontsize=10,
             )
             for x in range(adata.var.ambient.sum())
         ]
@@ -48,10 +45,7 @@ def dropout_plot(adata, show=False, ax=None):
         # otherwise, plot first ten, with indicator that there's more
         [
             ax.text(
-                x=1,
-                y=90 - 5 * x,
-                s=adata.var_names[adata.var.ambient][x],
-                fontsize=10,
+                x=1, y=90 - 5 * x, s=adata.var_names[adata.var.ambient][x], fontsize=10,
             )
             for x in range(10)
         ]
