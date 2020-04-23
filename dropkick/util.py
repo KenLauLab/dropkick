@@ -153,7 +153,7 @@ def _fit_and_score(
     )
 
     lamb = np.clip(score_lambda_path, m.lambda_path_[-1], m.lambda_path_[0])
-    return scorer(m, X[test_inx, :], y[test_inx], lamb=lamb), list(a.var_names[a.var.highly_variable])
+    return scorer(m, X[test_inx, :], y[test_inx], lamb=lamb), np.where(a.var.highly_variable)[0]
 
 
 def _fix_lambda_path(lambda_path):
