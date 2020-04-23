@@ -128,13 +128,6 @@ def recipe_dropkick(
         adata.obs["arcsinh_n_genes_by_counts"] = np.arcsinh(
             adata.obs["n_genes_by_counts"]
         )
-        # make sure everything went well...
-        np.testing.assert_approx_equal(
-            adata.var.pct_dropout_by_counts.min(),
-            lowest_dropout,
-            significant=7,
-            verbose=True,
-        )
 
     # normalize counts before transforming
     sc.pp.normalize_total(adata, target_sum=target_sum, layers=None, layer_norm=None)
