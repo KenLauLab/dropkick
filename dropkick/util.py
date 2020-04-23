@@ -64,7 +64,7 @@ def _score_lambda_path(
         action = "always" if verbose else "ignore"
         warnings.simplefilter(action, UndefinedMetricWarning)
 
-        scores, hvgs = Parallel(n_jobs=n_jobs, verbose=verbose, backend="threading")(
+        scores, hvgs = zip(*Parallel(n_jobs=n_jobs, verbose=verbose, backend="threading")(
             delayed(_fit_and_score)(
                 est,
                 scorer,
@@ -78,6 +78,7 @@ def _score_lambda_path(
                 test_idx,
             )
             for (train_idx, test_idx) in cv_split
+            )
         )
 
     return scores, hvgs
