@@ -261,7 +261,7 @@ def filter_thresh_obs(
     adata.obs[name] = 1
     # if any criteria are NOT met, label cells "bad"
     for i in range(len(obs_cols)):
-        if isinstance(thresholds[obs_cols[i]], list):
+        if isinstance(thresholds[obs_cols[i]], np.ndarray):
 
             # if multiple thresholds, filter first
             n_barcodes = adata.n_obs  # save for printing
