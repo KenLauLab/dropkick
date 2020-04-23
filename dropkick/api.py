@@ -227,8 +227,10 @@ def plot_thresh_obs(adata, thresholds, bins=40, show=True):
     axes[0].set_ylabel("cells")
     for i in range(len(thresholds)):
         axes[i].hist(adata.obs[list(thresholds.keys())[i]], bins=bins)
-        [plt.axvline(_x, color="r") for _x in list(thresholds.values())[i]]
-        axes[i].axvline(list(thresholds.values())[i], color="r")
+        if isinstance(list(thresholds.values())[i], np.ndarray):
+            [axes[i].axvline(_x, color="r") for _x in list(thresholds.values())[i]]
+        else:
+            axes[i].axvline(list(thresholds.values())[i], color="r")
         axes[i].set_title(list(thresholds.keys())[i])
     fig.tight_layout()
     if show:

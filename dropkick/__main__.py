@@ -157,6 +157,15 @@ def main():
             seed=args.seed,
             verbose=args.verbose,
         )
+        # save new labels in .h5ad
+        print(
+            "Writing updated counts to {}/{}_dropkick.h5ad".format(
+                args.output_dir, name
+            )
+        )
+        adata.write(
+            "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
+        )
         # generate plot of chosen training thresholds on heuristics
         print(
             "Saving threshold plots to {}/{}_{}_thresholds.png".format(
@@ -166,7 +175,7 @@ def main():
         a = (
             adata.copy()
         )  # copy anndata to re-calculate metrics for plotting using all barcodes
-        recipe_dropkick(a, filter=False, n_hvgs=None)
+        recipe_dropkick(a, filter=False, n_hvgs=None, verbose=False)
         _ = plot_thresh_obs(a, adata.uns["dropkick_thresholds"], bins=40, show=False)
         plt.savefig(
             "{}/{}_{}_thresholds.png".format(args.output_dir, name, args.thresh_method)
@@ -175,15 +184,6 @@ def main():
         print("Saving coefficient plot to {}/{}_coef.png".format(args.output_dir, name))
         _ = coef_plot(adata, show=False)
         plt.savefig("{}/{}_coef.png".format(args.output_dir, name))
-        # save new labels
-        print(
-            "Writing updated counts to {}/{}_dropkick.h5ad".format(
-                args.output_dir, name
-            )
-        )
-        adata.write(
-            "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
-        )
 
 
 main()
