@@ -174,7 +174,7 @@ def main():
         a = (
             adata.copy()
         )  # copy anndata to re-calculate metrics for plotting using all barcodes
-        recipe_dropkick(a, filter=False, n_hvgs=None, verbose=False)
+        a = recipe_dropkick(a, filter=False, n_hvgs=None, verbose=False)
         _ = plot_thresh_obs(a, adata.uns["dropkick_thresholds"], bins=40, show=False)
         plt.savefig("{}/{}_thresh.png".format(args.output_dir, name))
         # generate plot of dropkick coefficient values and CV scores vs tested lambda_path
