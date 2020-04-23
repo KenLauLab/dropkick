@@ -303,7 +303,8 @@ class LogitNet(BaseEstimator):
             if self.intercept_.shape == ():  # convert 0d array to scalar
                 self.intercept_ = float(self.intercept_)
 
-            self.hvgs_best_ = hvgs[self.lambda_best_inx_]
+            print(self.lambda_best_inx_)
+            self.hvgs_best_ = np.array(hvgs)[self.lambda_best_inx_]
 
         return self
 
