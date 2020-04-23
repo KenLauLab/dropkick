@@ -115,7 +115,7 @@ class LogitNet(BaseEstimator):
         The set of coefficients for each value of lambda in lambda_path_.
 
     coef_ : array, shape (n_clases, n_features)
-        The coefficients corresponding to lamnda_best_.
+        The coefficients corresponding to lambda_best_.
 
     intercept_ : array, shape (n_classes,)
         The intercept corresponding to lambda_best_.
@@ -224,6 +224,7 @@ class LogitNet(BaseEstimator):
         sc.pp.highly_variable_genes(
             a, n_top_genes=n_hvgs, flavor="seurat", inplace=True
         )  # determine HVGs with Seurat method
+        self.hvgs = a.var.highly_variable  # save hvgs as attribute of classifier
         X = adata.X[
             :, a.var.highly_variable
         ].copy()  # X becomes scaled counts for all cells in HVGs only
@@ -302,9 +303,6 @@ class LogitNet(BaseEstimator):
             self.intercept_ = self.intercept_path_[..., self.lambda_best_inx_].squeeze()
             if self.intercept_.shape == ():  # convert 0d array to scalar
                 self.intercept_ = float(self.intercept_)
-
-            print(self.lambda_best_inx_)
-            self.hvgs_best_ = np.array(hvgs)[self.lambda_best_inx_]
 
         return self
 
@@ -385,7 +383,6 @@ class LogitNet(BaseEstimator):
         else:
             max_features = self.max_features
 
-        # for documentation on the glmnet function lognet, see doc.py
         if issparse(X):
             _x = csc_matrix(X, dtype=np.float64, copy=True)
 
