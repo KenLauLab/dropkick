@@ -155,7 +155,11 @@ def recipe_dropkick(
     adata.layers[
         "arcsinh_norm"
     ] = adata.X.copy()  # save arcsinh scaled counts in .layers
-    del adata.layers["norm_counts"]  # remove unneeded normalized counts
+
+    # remove unneeded stuff
+    del adata.layers["norm_counts"]
+    adata.obs.drop(columns=["n_genes"])
+    adata.var.drop(columns=["n_counts","dispersions","dispersions_norm"])
 
     # set .X as desired for downstream processing; default raw_counts
     if (X_final != "raw_counts") & verbose:
@@ -343,7 +347,7 @@ def dropkick(
         mito_names=mito_names,
         n_ambient=n_ambient,
         target_sum=None,
-        n_hvgs=None, # dont need hvgs here, LogitNet will find and return
+        n_hvgs=n_hvgs,
         X_final="arcsinh_norm",
         verbose=verbose,
     )
@@ -362,6 +366,7 @@ def dropkick(
         name="train",
     )
 
+    X = a[:, a.var.highly_variable].X.copy()  # X for testing
     y = a.obs["train"].copy(deep=True)  # final y is "train" labels from step 2
     print("Training LogitNet with alphas: {}".format(alphas))
 
@@ -384,7 +389,7 @@ def dropkick(
             cv_scores["rc"].append(rc)
             cv_scores["alpha"].append(alpha)
             cv_scores["lambda"].append(rc.lambda_best_)
-            cv_scores["score"].append(rc.score(a[:,rc.hvgs].X.copy(), y, lamb=rc.lambda_best_))
+            cv_scores["score"].append(rc.score(X, y, lamb=rc.lambda_best_))
         # determine optimal lambda and alpha values by accuracy score
         lambda_ = cv_scores["lambda"][
             cv_scores["score"].index(max(cv_scores["score"]))
@@ -414,8 +419,6 @@ def dropkick(
 
     # 4) use model to assign scores and labels to original adata
     print("Assigning scores and labels")
-    # feature select with hvgs
-    X = a[:, rc_.hvgs].X.copy()
     adata.obs.loc[a.obs_names, "dropkick_score"] = rc_.predict_proba(X)[:, 1]
     adata.obs.dropkick_score.fillna(0, inplace=True)  # fill ignored cells with zeros
     adata.obs.loc[a.obs_names, "dropkick_label"] = rc_.predict(X)
@@ -423,7 +426,7 @@ def dropkick(
     for metric in metrics:
         adata.obs.loc[a.obs_names, metric] = a.obs[metric]
         adata.obs[metric].fillna(0, inplace=True)  # fill ignored cells with zeros
-    adata.var.loc[rc_.hvgs, "dropkick_coef"] = rc_.coef_.squeeze()
+    adata.var.loc[a.var.highly_variable, "dropkick_coef"] = rc_.coef_.squeeze()
 
     # 5) save model hyperparameters in .uns
     adata.uns["dropkick_thresholds"] = adata_thresh

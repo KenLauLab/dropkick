@@ -219,15 +219,8 @@ class LogitNet(BaseEstimator):
         self : object
             Returns self.
         """
-        a = adata.copy()  # select training set for fold
-        a.X = a.layers["log1p_norm"].copy()  # use log1p-transformed counts to calc HVGs
-        sc.pp.highly_variable_genes(
-            a, n_top_genes=n_hvgs, flavor="seurat", inplace=True
-        )  # determine HVGs with Seurat method
-        self.hvgs = a.var.highly_variable  # save hvgs as attribute of classifier
-        X = adata.X[
-            :, a.var.highly_variable
-        ].copy()  # X becomes scaled counts for all cells in HVGs only
+        # X is scaled counts for all cells in HVGs only for first run
+        X = adata[:, adata.var.highly_variable].X.copy()
 
         X, y = check_X_y(X, y, accept_sparse="csr", ensure_min_samples=2)
         if sample_weight is None:
