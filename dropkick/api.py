@@ -67,7 +67,7 @@ def recipe_dropkick(
         if verbose:
             if adata.shape[0] != orig_shape[0]:
                 print(
-                    "Ignoring {} cells with less than {} genes detected".format(
+                    "Ignoring {} barcodes with less than {} genes detected".format(
                         orig_shape[0] - adata.shape[0], min_genes
                     )
                 )
@@ -165,37 +165,33 @@ def recipe_dropkick(
 def auto_thresh_obs(
     adata,
     obs_cols=["arcsinh_n_genes_by_counts", "pct_counts_ambient"],
-    # double=["arcsinh_n_genes_by_counts"],
-    # single=["pct_counts_ambient"],
-    method="otsu",
+    methods=["multiotsu", "otsu"],
 ):
     """
     automated thresholding on metrics in adata.obs
 
     Parameters:
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
-        double (list of str): name of column(s) to double threshold from adata.obs
-        single (list of str): name of column(s) to single threshold from adata.obs
-        method (str): one of 'otsu' (default), 'li', or 'mean'
+        obs_cols (list of str): name of column(s) to threshold from adata.obs
+        methods (list of str): one of 'otsu' (default), 'multiotsu', 'li', or 'mean'
 
     Returns:
         thresholds (dict): keys are obs_cols and values are threshold results
     """
     thresholds = dict.fromkeys(obs_cols)  # initiate output dictionary
-    # for col in double:
-    #    tmp = np.array(adata.obs[col])
-    #    thresholds[col] = threshold_multiotsu(tmp)
-    for col in obs_cols:
-        tmp = np.array(adata.obs[col])
-        if method == "otsu":
-            thresholds[col] = threshold_otsu(tmp)
-        elif method == "li":
-            thresholds[col] = threshold_li(tmp)
-        elif method == "mean":
-            thresholds[col] = threshold_mean(tmp)
+    for i in range(len(obs_cols)):
+        tmp = np.array(adata.obs[obs_cols[i]])
+        if methods[i] == "multiotsu":
+            thresholds[obs_cols[i]] = threshold_multiotsu(tmp)
+        elif methods[i] == "otsu":
+            thresholds[obs_cols[i]] = threshold_otsu(tmp)
+        elif methods[i] == "li":
+            thresholds[obs_cols[i]] = threshold_li(tmp)
+        elif methods[i] == "mean":
+            thresholds[obs_cols[i]] = threshold_mean(tmp)
         else:
             raise ValueError(
-                "Please provide a valid threshold method ('otsu', 'li', 'mean')."
+                "Please provide a valid threshold method ('otsu', 'multiotsu', 'li', 'mean')."
             )
 
     return thresholds
@@ -239,6 +235,7 @@ def filter_thresh_obs(
     directions=["above", "below"],
     inclusive=True,
     name="thresh_filter",
+    verbose=True,
 ):
     """
     filter cells by thresholding on metrics in adata.obs as output by auto_thresh_obs()
@@ -250,6 +247,7 @@ def filter_thresh_obs(
         directions (list of str): 'below' or 'above', indicating which direction to keep (label=1)
         inclusive (bool): include cells at the thresholds? default True.
         name (str): name of .obs col containing final labels
+        verbose (bool): print updates to the console?
 
     Returns:
         updated adata with filter labels in adata.obs[name]
@@ -258,32 +256,93 @@ def filter_thresh_obs(
     adata.obs[name] = 1
     # if any criteria are NOT met, label cells "bad"
     for i in range(len(obs_cols)):
-        if directions[i] == "above":
-            if inclusive:
-                adata.obs.loc[
-                    (adata.obs[name] == 1)
-                    & (adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]]),
-                    name,
-                ] = 0
-            else:
-                adata.obs.loc[
-                    (adata.obs[name] == 1)
-                    & (adata.obs[obs_cols[i]] < thresholds[obs_cols[i]]),
-                    name,
-                ] = 0
-        elif directions[i] == "below":
-            if inclusive:
-                adata.obs.loc[
-                    (adata.obs[name] == 1)
-                    & (adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]]),
-                    name,
-                ] = 0
-            else:
-                adata.obs.loc[
-                    (adata.obs[name] == 1)
-                    & (adata.obs[obs_cols[i]] > thresholds[obs_cols[i]]),
-                    name,
-                ] = 0
+        if isinstance(thresholds[obs_cols[i]], list):
+
+            # if multiple thresholds, filter first
+            n_barcodes = adata.n_obs  # save for printing
+            if directions[i] == "above":
+                # use first threshold [0] as minimum for filtering
+                if inclusive:
+                    adata = adata[adata.obs[obs_cols[i]] > thresholds[obs_cols[i]][0], :].copy()
+                else:
+                    adata = adata[adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]][0], :].copy()
+                if verbose:
+                    print(
+                        "Ignoring {} barcodes below first threshold on {}".format(
+                            n_barcodes - adata.shape[0], obs_cols[i]
+                        )
+                    )
+            elif directions[i] == "below":
+                # use first threshold [0] as maximum for filtering
+                if inclusive:
+                    adata = adata[adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]][1], :].copy()
+                else:
+                    adata = adata[adata.obs[obs_cols[i]] < thresholds[obs_cols[i]][1], :].copy()
+                if verbose:
+                    print(
+                        "Ignoring {} barcodes above second threshold on {}".format(
+                            n_barcodes - adata.shape[0], obs_cols[i]
+                        )
+                    )
+
+            # then, set labels on remaining barcodes as usual
+            if directions[i] == "above":
+                if inclusive:
+                    adata.obs.loc[
+                        (adata.obs[name] == 1)
+                        & (adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]][1]),
+                        name,
+                    ] = 0
+                else:
+                    adata.obs.loc[
+                        (adata.obs[name] == 1)
+                        & (adata.obs[obs_cols[i]] < thresholds[obs_cols[i]][1]),
+                        name,
+                    ] = 0
+            elif directions[i] == "below":
+                if inclusive:
+                    adata.obs.loc[
+                        (adata.obs[name] == 1)
+                        & (adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]][0]),
+                        name,
+                    ] = 0
+                else:
+                    adata.obs.loc[
+                        (adata.obs[name] == 1)
+                        & (adata.obs[obs_cols[i]] > thresholds[obs_cols[i]][0]),
+                        name,
+                    ] = 0
+
+        else:
+                # if single threshold, just assign labels
+            if directions[i] == "above":
+                if inclusive:
+                    adata.obs.loc[
+                        (adata.obs[name] == 1)
+                        & (adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]]),
+                        name,
+                    ] = 0
+                else:
+                    adata.obs.loc[
+                        (adata.obs[name] == 1)
+                        & (adata.obs[obs_cols[i]] < thresholds[obs_cols[i]]),
+                        name,
+                    ] = 0
+            elif directions[i] == "below":
+                if inclusive:
+                    adata.obs.loc[
+                        (adata.obs[name] == 1)
+                        & (adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]]),
+                        name,
+                    ] = 0
+                else:
+                    adata.obs.loc[
+                        (adata.obs[name] == 1)
+                        & (adata.obs[obs_cols[i]] > thresholds[obs_cols[i]]),
+                        name,
+                    ] = 0
+
+    return adata
 
 
 def dropkick(
@@ -292,8 +351,8 @@ def dropkick(
     mito_names="^mt-|^MT-",
     n_ambient=10,
     n_hvgs=2000,
-    thresh_method="otsu",
     metrics=["arcsinh_n_genes_by_counts", "pct_counts_ambient",],
+    thresh_methods=["multiotsu","otsu"],
     directions=["above", "below"],
     alphas=[0.1],
     max_iter=1000,
@@ -314,8 +373,9 @@ def dropkick(
         n_ambient (int): number of ambient genes to call. top genes by cells.
         n_hvgs (int or None): number of HVGs to calculate using Seurat method
             if None, do not calculate HVGs
-        thresh_method (str): one of 'otsu' (default), 'li', or 'mean'
         metrics (list of str): name of column(s) to threshold from adata.obs
+        thresh_methods (list of str): one of 'otsu' (default), 'multiotsu',
+            'li', or 'mean'
         directions (list of str): 'below' or 'above', indicating which
             direction to keep (label=1)
         alphas (tuple of int): alpha values to test using glmnet with n-fold
@@ -347,29 +407,29 @@ def dropkick(
         verbose=verbose,
     )
 
-    # 1) threshold chosen heuristics using automated method
+    # 1) threshold chosen heuristics using automated methods
     print("Thresholding on heuristics for training labels:\n\t{}".format(metrics))
-    adata_thresh = auto_thresh_obs(a, method=thresh_method, obs_cols=metrics)
+    adata_thresh = auto_thresh_obs(a, methods=thresh_methods, obs_cols=metrics)
 
     # 2) create labels from combination of thresholds
-    filter_thresh_obs(
+    a = filter_thresh_obs(
         a,
         adata_thresh,
         obs_cols=metrics,
         directions=directions,
         inclusive=True,
         name="train",
+        verbose=verbose,
     )
 
     X = a[:, a.var.highly_variable].X.copy()  # X for testing
     y = a.obs["train"].copy(deep=True)  # final y is "train" labels from step 2
-    print("Training LogitNet with alphas: {}".format(alphas))
+    print("Training dropkick with alphas: {}".format(alphas))
 
     if len(alphas) > 1:
         # 3.1) cross-validation to choose alpha and lambda values
         cv_scores = {"rc": [], "lambda": [], "alpha": [], "score": []}  # dictionary o/p
         for alpha in alphas:
-            # print("Training LogitNet with alpha: {}".format(alpha), end="  ")
             rc = LogitNet(
                 alpha=alpha,
                 n_lambda=100,
@@ -421,15 +481,16 @@ def dropkick(
     for metric in metrics:
         adata.obs.loc[a.obs_names, metric] = a.obs[metric]
         adata.obs[metric].fillna(0, inplace=True)  # fill ignored cells with zeros
-    adata.var.loc[a.var.highly_variable, "dropkick_coef"] = rc_.coef_.squeeze()
+    # add dropkick coefficients to genes used in model (hvgs from `a`)
+    adata.var.loc[a.var_names[a.var.highly_variable], "dropkick_coef"] = rc_.coef_.squeeze()
 
     # 5) save model hyperparameters in .uns
     adata.uns["dropkick_thresholds"] = adata_thresh
     adata.uns["dropkick_args"] = {
         "n_ambient": n_ambient,
         "n_hvgs": n_hvgs,
-        "thresh_method": thresh_method,
         "metrics": metrics,
+        "thresh_methods": thresh_methods,
         "directions": directions,
         "alphas": alphas,
         "chosen_alpha": alpha_,

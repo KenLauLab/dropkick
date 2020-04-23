@@ -33,22 +33,23 @@ def main():
     parser.add_argument(
         "--obs-cols",
         type=str,
-        help="Heuristics for thresholding. Several can be specified with '--obs-cols arcsinh_n_genes_by_counts pct_counts_ambient'",
+        help="Heuristics for thresholding. Default ['arcsinh_n_genes_by_counts','pct_counts_ambient']",
         nargs="+",
         default=["arcsinh_n_genes_by_counts", "pct_counts_ambient"],
     )
     parser.add_argument(
-        "--directions",
+        "--thresh-methods",
         type=str,
-        help="Direction of thresholding for each heuristic. Several can be specified with '--directions above below'",
+        help="Methods used for automatic thresholding on heuristics. Default ['multiotsu','otsu']",
         nargs="+",
-        default=["above", "below"],
+        default=["multiotsu", "otsu"],
     )
     parser.add_argument(
-        "--thresh-method",
+        "--directions",
         type=str,
-        help="Method used for automatic thresholding on heuristics. One of ['otsu','li','mean']. Default 'otsu'",
-        default="otsu",
+        help="Direction of thresholding for each heuristic. Default ['above','below']",
+        nargs="+",
+        default=["above", "below"],
     )
     parser.add_argument(
         "--n-ambient",
@@ -98,14 +99,14 @@ def main():
         default=-1,
     )
     parser.add_argument(
-        "-v",
-        "--verbose",
-        help="Verbosity of glmnet module. Default False",
+        "--qc",
+        help="Perform analysis of ambient expression content and overall QC.",
         action="store_true",
     )
     parser.add_argument(
-        "--qc",
-        help="Perform analysis of ambient expression content and overall QC.",
+        "-v",
+        "--verbose",
+        help="Verbosity of glmnet module. Default False",
         action="store_true",
     )
 
@@ -148,8 +149,8 @@ def main():
             min_genes=args.min_genes,
             n_ambient=args.n_ambient,
             n_hvgs=args.n_hvgs,
-            thresh_method=args.thresh_method,
             metrics=args.obs_cols,
+            thresh_methods=args.thresh_methods,
             directions=args.directions,
             alphas=args.alphas,
             max_iter=args.n_iter,
@@ -168,8 +169,8 @@ def main():
         )
         # generate plot of chosen training thresholds on heuristics
         print(
-            "Saving threshold plots to {}/{}_{}_thresholds.png".format(
-                args.output_dir, name, args.thresh_method
+            "Saving threshold plots to {}/{}_thresh.png".format(
+                args.output_dir, name
             )
         )
         a = (
@@ -178,7 +179,7 @@ def main():
         recipe_dropkick(a, filter=False, n_hvgs=None, verbose=False)
         _ = plot_thresh_obs(a, adata.uns["dropkick_thresholds"], bins=40, show=False)
         plt.savefig(
-            "{}/{}_{}_thresholds.png".format(args.output_dir, name, args.thresh_method)
+            "{}/{}_thresh.png".format(args.output_dir, name)
         )
         # generate plot of dropkick coefficient values and CV scores vs tested lambda_path
         print("Saving coefficient plot to {}/{}_coef.png".format(args.output_dir, name))
