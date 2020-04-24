@@ -31,7 +31,8 @@ def main():
         help="Input (cell x gene) counts matrix as .h5ad or tab delimited text file",
     )
     parser.add_argument(
-        "--obs-cols",
+        "-m",
+        "--metrics",
         type=str,
         help="Heuristics for thresholding. Default ['arcsinh_n_genes_by_counts','pct_counts_ambient']",
         nargs="+",
@@ -149,7 +150,7 @@ def main():
             min_genes=args.min_genes,
             n_ambient=args.n_ambient,
             n_hvgs=args.n_hvgs,
-            metrics=args.obs_cols,
+            metrics=args.metrics,
             thresh_methods=args.thresh_methods,
             directions=args.directions,
             alphas=args.alphas,
@@ -167,20 +168,17 @@ def main():
         adata.write(
             "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
         )
-        # generate plot of chosen training thresholds on heuristics
-        print(
-            "Saving threshold plots to {}/{}_thresh.png".format(args.output_dir, name)
-        )
-        a = (
-            adata.copy()
-        )  # copy anndata to re-calculate metrics for plotting using all barcodes
-        a = recipe_dropkick(a, filter=False, n_hvgs=None, verbose=False)
-        _ = plot_thresh_obs(a, adata.uns["dropkick_thresholds"], bins=40, show=False)
-        plt.savefig("{}/{}_thresh.png".format(args.output_dir, name))
         # generate plot of dropkick coefficient values and CV scores vs tested lambda_path
         print("Saving coefficient plot to {}/{}_coef.png".format(args.output_dir, name))
         _ = coef_plot(adata, show=False)
         plt.savefig("{}/{}_coef.png".format(args.output_dir, name))
+        # generate plot of chosen training thresholds on heuristics
+        print(
+            "Saving score plots to {}/{}_score.png".format(args.output_dir, name)
+        )
+        adata = recipe_dropkick(adata, filter=True, min_genes=args.min_genes, n_hvgs=None, verbose=False)
+        _ = plot_thresh_obs(a, args.metrics, show=False)
+        plt.savefig("{}/{}_score.png".format(args.output_dir, name))
 
 
 main()

@@ -4,7 +4,7 @@ package initialization
 
 @author: C Heiser
 """
-from .api import recipe_dropkick, dropkick, plot_thresh_obs, coef_inventory, coef_plot
+from .api import recipe_dropkick, dropkick, plot_thresh_obs, coef_inventory, coef_plot, score_plot
 
 __all__ = [
     "dropkick",
@@ -12,6 +12,7 @@ __all__ = [
     "plot_thresh_obs",
     "coef_inventory",
     "coef_plot",
+    "score_plot",
 ]
 
 from ._version import get_versions
