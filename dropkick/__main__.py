@@ -177,7 +177,7 @@ def main():
             "Saving score plots to {}/{}_score.png".format(args.output_dir, name)
         )
         adata = recipe_dropkick(adata, filter=True, min_genes=args.min_genes, n_hvgs=None, verbose=False)
-        _ = plot_thresh_obs(a, args.metrics, show=False)
+        _ = plot_thresh_obs(adata, args.metrics, show=False)
         plt.savefig("{}/{}_score.png".format(args.output_dir, name))
 
 
