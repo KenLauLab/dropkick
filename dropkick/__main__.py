@@ -128,7 +128,8 @@ def main():
         # preprocess and calculate metrics
         adata = recipe_dropkick(
             adata,
-            filter=False,
+            filter=True,
+            min_genes=args.min_genes,
             n_hvgs=None,
             X_final="raw_counts",
             n_ambient=args.n_ambient,
