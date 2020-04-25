@@ -8,7 +8,7 @@ import os, errno, argparse
 import scanpy as sc
 import matplotlib.pyplot as plt
 
-from .api import dropkick, recipe_dropkick, plot_thresh_obs, coef_plot
+from .api import dropkick, recipe_dropkick, coef_plot, score_plot
 from .qc import summary_plot
 
 
