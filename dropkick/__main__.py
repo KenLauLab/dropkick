@@ -173,11 +173,11 @@ def main():
         _ = coef_plot(adata, show=False)
         plt.savefig("{}/{}_coef.png".format(args.output_dir, name))
         # generate plot of chosen training thresholds on heuristics
-        print(
-            "Saving score plots to {}/{}_score.png".format(args.output_dir, name)
+        print("Saving score plots to {}/{}_score.png".format(args.output_dir, name))
+        adata = recipe_dropkick(
+            adata, filter=True, min_genes=args.min_genes, n_hvgs=None, verbose=False
         )
-        adata = recipe_dropkick(adata, filter=True, min_genes=args.min_genes, n_hvgs=None, verbose=False)
-        _ = plot_thresh_obs(adata, args.metrics, show=False)
+        _ = score_plot(adata, args.metrics, show=False)
         plt.savefig("{}/{}_score.png".format(args.output_dir, name))
 
 
