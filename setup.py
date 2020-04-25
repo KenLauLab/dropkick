@@ -82,7 +82,7 @@ if __name__ == "__main__":
         author="Cody Heiser",
         author_email="codyheiser49@gmail.com",
         url="https://github.com/KenLauLab/dropkick",
-        install_requires=read('requirements.txt').splitlines(),
+        install_requires=read("requirements.txt").splitlines(),
         ext_modules=[glmnet_lib],
         packages=setuptools.find_packages(),
         classifiers=[
@@ -94,4 +94,9 @@ if __name__ == "__main__":
             "Topic :: Scientific/Engineering",
         ],
         python_requires=">=3.6",
+        entry_points={
+          "console_scripts": [
+              "dropkick = dropkick.__main__:main"
+          ]
+      },
     )

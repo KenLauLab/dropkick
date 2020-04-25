@@ -574,10 +574,12 @@ def coef_plot(adata, show=True):
         alpha=0.5,
     )
     # plot top three genes by coefficient value
+    # get range of values for positioning text
+    val_range = adata.uns["dropkick_args"]["coef_path"].max() - adata.uns["dropkick_args"]["coef_path"].min()
     [
         ax.text(
             x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
-            y=adata.var.dropkick_coef.max() + 0.15 - 0.05 * x,
+            y=adata.var.dropkick_coef.max() + (0.15 * val_range) - (0.05 * val_range * x),
             s=" "
             + adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"]
             .nlargest(3)
@@ -591,7 +593,7 @@ def coef_plot(adata, show=True):
     [
         ax.text(
             x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
-            y=adata.var.dropkick_coef.min() - 0.20 + 0.05 * x,
+            y=adata.var.dropkick_coef.min() - (0.20 * val_range) + (0.05 * val_range * x),
             s=" "
             + adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"]
             .nsmallest(3)

@@ -32,12 +32,21 @@ def dropout_plot(adata, show=False, ax=None):
             np.argsort(adata.var.pct_dropout_by_counts)
         ].values
     )
-    ax.text(x=1, y=97, s="Ambient Genes:", fontweight="bold", fontsize=10)
+    # get range of values for positioning text
+    val_max = adata.var.pct_dropout_by_counts.max()
+    val_range = val_max - adata.var.pct_dropout_by_counts.min()
+    ax.text(
+        x=1,
+        y=(val_max - (0.03 * val_range)),
+        s="Ambient Genes:",
+        fontweight="bold",
+        fontsize=10
+    )
     if adata.var.ambient.sum() < 14:
         # plot all ambient gene names if they'll fit
         [
             ax.text(
-                x=1, y=90 - 5 * x, s=adata.var_names[adata.var.ambient][x], fontsize=10,
+                x=1, y=((val_max - (0.10 * val_range)) - ((0.05 * val_range) * x)), s=adata.var_names[adata.var.ambient][x], fontsize=10,
             )
             for x in range(adata.var.ambient.sum())
         ]
@@ -45,11 +54,11 @@ def dropout_plot(adata, show=False, ax=None):
         # otherwise, plot first ten, with indicator that there's more
         [
             ax.text(
-                x=1, y=90 - 5 * x, s=adata.var_names[adata.var.ambient][x], fontsize=10,
+                x=1, y=((val_max - (0.10 * val_range)) - ((0.05 * val_range) * x)), s=adata.var_names[adata.var.ambient][x], fontsize=10,
             )
             for x in range(10)
         ]
-        ax.text(x=1, y=40, s=". . .", fontweight="bold", fontsize=10)
+        ax.text(x=1, y=(val_max - (0.60 * val_range)), s=". . .", fontweight="bold", fontsize=10)
     ax.set_xscale("log")
     ax.set_ylabel("Dropout Rate (%)")
     ax.set_xlabel("Ranked Genes")

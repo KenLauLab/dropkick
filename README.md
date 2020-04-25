@@ -26,12 +26,12 @@ python setup.py install
 
 #### Usage from command line:
 ```bash
-python -m dropkick path/to/counts.h5ad
+dropkick path/to/counts.h5ad
 ```
 
 Output will be saved in a new `.h5ad` file containing __dropkick__ scores, labels, and model parameters.
 
-You can also run the `dropkick.qc` module from terminal for a quick look at the total UMI distribution and ambient genes, saved as `*_dropkickqc.png`:
+You can also run the `dropkick.qc` module from terminal for a quick look at the total UMI distribution and ambient genes, saved as `*_qc.png`:
 ```bash
 python -m dropkick path/to/counts.h5ad --qc
 ```
