@@ -10,7 +10,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-import seaborn as sns
+import seaborn as sns; sns.set_style("white")
 import scanpy as sc
 import time
 import threading
@@ -655,99 +655,98 @@ def score_plot(
         joint plot of dropkick_scores and metric distributions with
             corresponding training thresholds
     """
-    with sns.set_style("white"):
-        # initialize joint plot object
-        g = sns.jointplot(
-            x=adata.obs[metrics[0]], y=adata.obs[metrics[1]], space=0, color="k",
+    # initialize joint plot object
+    g = sns.jointplot(
+        x=adata.obs[metrics[0]], y=adata.obs[metrics[1]], space=0, color="k",
+    )
+    # change to focus on scatter plot
+    g.ax_joint.cla()
+    plt.sca(g.ax_joint)
+    # set axes labels
+    plt.xlabel(metrics[0])
+    plt.ylabel(metrics[1])
+    # scatter plot, color by dropkick_score
+    points = plt.scatter(
+        x=adata.obs[metrics[0]],
+        y=adata.obs[metrics[1]],
+        c=adata.obs["dropkick_score"],
+        s=25,
+        cmap="coolwarm_r",
+        alpha=0.5,
+    )
+    # plot training thresholds on scatter
+    if isinstance(adata.uns["dropkick_thresholds"][metrics[0]], np.ndarray):
+        [
+            plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+            for _x in adata.uns["dropkick_thresholds"][metrics[0]]
+        ]
+    else:
+        plt.axvline(
+            adata.uns["dropkick_thresholds"][metrics[0]],
+            linestyle="-",
+            color="k",
+            linewidth=2.5,
+            alpha=0.7,
         )
-        # change to focus on scatter plot
-        g.ax_joint.cla()
-        plt.sca(g.ax_joint)
-        # set axes labels
-        plt.xlabel(metrics[0])
-        plt.ylabel(metrics[1])
-        # scatter plot, color by dropkick_score
-        points = plt.scatter(
-            x=adata.obs[metrics[0]],
-            y=adata.obs[metrics[1]],
-            c=adata.obs["dropkick_score"],
-            s=25,
-            cmap="coolwarm_r",
-            alpha=0.5,
+    if isinstance(adata.uns["dropkick_thresholds"][metrics[1]], np.ndarray):
+        [
+            plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+            for _x in adata.uns["dropkick_thresholds"][metrics[1]]
+        ]
+    else:
+        plt.axhline(
+            adata.uns["dropkick_thresholds"][metrics[1]],
+            linestyle="-",
+            color="k",
+            linewidth=2.5,
+            alpha=0.7,
         )
-        # plot training thresholds on scatter
-        if isinstance(adata.uns["dropkick_thresholds"][metrics[0]], np.ndarray):
-            [
-                plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-                for _x in adata.uns["dropkick_thresholds"][metrics[0]]
-            ]
-        else:
-            plt.axvline(
-                adata.uns["dropkick_thresholds"][metrics[0]],
-                linestyle="-",
-                color="k",
-                linewidth=2.5,
-                alpha=0.7,
-            )
-        if isinstance(adata.uns["dropkick_thresholds"][metrics[1]], np.ndarray):
-            [
-                plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-                for _x in adata.uns["dropkick_thresholds"][metrics[1]]
-            ]
-        else:
-            plt.axhline(
-                adata.uns["dropkick_thresholds"][metrics[1]],
-                linestyle="-",
-                color="k",
-                linewidth=2.5,
-                alpha=0.7,
-            )
-        # change focus to x margin plot to continue threshold line
-        plt.sca(g.ax_marg_x)
-        if isinstance(adata.uns["dropkick_thresholds"][metrics[0]], np.ndarray):
-            [
-                plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-                for _x in adata.uns["dropkick_thresholds"][metrics[0]]
-            ]
-        else:
-            plt.axvline(
-                adata.uns["dropkick_thresholds"][metrics[0]],
-                linestyle="-",
-                color="k",
-                linewidth=2.5,
-                alpha=0.7,
-            )
-        # change focus to y margin plot to continue threshold line
-        plt.sca(g.ax_marg_y)
-        if isinstance(adata.uns["dropkick_thresholds"][metrics[1]], np.ndarray):
-            [
-                plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-                for _x in adata.uns["dropkick_thresholds"][metrics[1]]
-            ]
-        else:
-            plt.axhline(
-                adata.uns["dropkick_thresholds"][metrics[1]],
-                linestyle="-",
-                color="k",
-                linewidth=2.5,
-                alpha=0.7,
-            )
-        # add colorbar inside scatter axes
-        axins1 = inset_axes(
-            g.ax_joint,
-            width="40%",  # width = 40% of parent_bbox width
-            height="3%",  # height : 3%
-            loc="upper right",
+    # change focus to x margin plot to continue threshold line
+    plt.sca(g.ax_marg_x)
+    if isinstance(adata.uns["dropkick_thresholds"][metrics[0]], np.ndarray):
+        [
+            plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+            for _x in adata.uns["dropkick_thresholds"][metrics[0]]
+        ]
+    else:
+        plt.axvline(
+            adata.uns["dropkick_thresholds"][metrics[0]],
+            linestyle="-",
+            color="k",
+            linewidth=2.5,
+            alpha=0.7,
         )
-        cbar = plt.colorbar(
-            points,
-            cax=axins1,
-            drawedges=False,
-            label="dropkick_score",
-            orientation="horizontal",
-            ticks=[0.1, 0.5, 0.9],
+    # change focus to y margin plot to continue threshold line
+    plt.sca(g.ax_marg_y)
+    if isinstance(adata.uns["dropkick_thresholds"][metrics[1]], np.ndarray):
+        [
+            plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+            for _x in adata.uns["dropkick_thresholds"][metrics[1]]
+        ]
+    else:
+        plt.axhline(
+            adata.uns["dropkick_thresholds"][metrics[1]],
+            linestyle="-",
+            color="k",
+            linewidth=2.5,
+            alpha=0.7,
         )
-        cbar.solids.set_edgecolor("face")
+    # add colorbar inside scatter axes
+    axins1 = inset_axes(
+        g.ax_joint,
+        width="40%",  # width = 40% of parent_bbox width
+        height="3%",  # height : 3%
+        loc="upper right",
+    )
+    cbar = plt.colorbar(
+        points,
+        cax=axins1,
+        drawedges=False,
+        label="dropkick_score",
+        orientation="horizontal",
+        ticks=[0.1, 0.5, 0.9],
+    )
+    cbar.solids.set_edgecolor("face")
     if show:
         plt.show()
     else:
