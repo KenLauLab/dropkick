@@ -112,13 +112,17 @@ def main():
         "-V", "--version", action="version", version=get_versions()["version"],
     )
 
-    common_parser = argparse.ArgumentParser(add_help=False)
-    common_parser.add_argument(
+    subparsers = parser.add_subparsers()
+
+    run_parser = subparsers.add_parser(
+        "run", help="Automated filtering of scRNA-seq data.",
+    )
+    run_parser.add_argument(
         "counts",
         type=str,
         help="Input (cell x gene) counts matrix as .h5ad or tab delimited text file",
     )
-    common_parser.add_argument(
+    run_parser.add_argument(
         "--output-dir",
         required=False,
         type=str,
@@ -126,32 +130,26 @@ def main():
         nargs="?",
         default=".",
     )
-    common_parser.add_argument(
+    run_parser.add_argument(
         "-v",
         "--verbose",
         required=False,
         help="Verbosity of glmnet module. Default False",
         action="store_true",
     )
-    common_parser.add_argument(
+    run_parser.add_argument(
         "--min-genes",
         required=False,
         type=int,
         help="Minimum number of genes detected to keep cell. Default 50",
         default=50,
     )
-    common_parser.add_argument(
+    run_parser.add_argument(
         "--n-ambient",
         required=False,
         type=int,
         help="Number of top genes by dropout rate to use for ambient profile. Default 10",
         default=10,
-    )
-
-    subparsers = parser.add_subparsers()
-
-    run_parser = subparsers.add_parser(
-        "run", parents=[common_parser], help="Automated filtering of scRNA-seq data.",
     )
     run_parser.add_argument(
         "-m",
@@ -217,7 +215,41 @@ def main():
     run_parser.set_defaults(function=run)
 
     qc_parser = subparsers.add_parser(
-        "qc", parents=[common_parser], help="scRNA-seq quality control report.",
+        "qc", help="scRNA-seq quality control report.",
+    )
+    qc_parser.add_argument(
+        "counts",
+        type=str,
+        help="Input (cell x gene) counts matrix as .h5ad or tab delimited text file",
+    )
+    qc_parser.add_argument(
+        "--output-dir",
+        required=False,
+        type=str,
+        help="Output directory. Output will be placed in [output-dir]/[name]_dropkick.h5ad. Default './'",
+        nargs="?",
+        default=".",
+    )
+    qc_parser.add_argument(
+        "-v",
+        "--verbose",
+        required=False,
+        help="Verbosity of glmnet module. Default False",
+        action="store_true",
+    )
+    qc_parser.add_argument(
+        "--min-genes",
+        required=False,
+        type=int,
+        help="Minimum number of genes detected to keep cell. Default 50",
+        default=50,
+    )
+    qc_parser.add_argument(
+        "--n-ambient",
+        required=False,
+        type=int,
+        help="Number of top genes by dropout rate to use for ambient profile. Default 10",
+        default=10,
     )
     qc_parser.set_defaults(function=qc)
 
