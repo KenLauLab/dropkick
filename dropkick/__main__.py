@@ -178,6 +178,3 @@ def main():
             adata, ["arcsinh_n_genes_by_counts", "pct_counts_ambient"], show=False
         )
         plt.savefig("{}/{}_score.png".format(args.output_dir, name))
-
-
-main()
