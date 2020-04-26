@@ -4,7 +4,15 @@ package initialization
 
 @author: C Heiser
 """
-from .api import recipe_dropkick, dropkick, plot_thresh_obs, coef_inventory, coef_plot, score_plot
+from .api import (
+    dropkick,
+    recipe_dropkick,
+    plot_thresh_obs,
+    coef_inventory,
+    coef_plot,
+    score_plot,
+)
+from .qc import qc_summary
 
 __all__ = [
     "dropkick",
@@ -13,8 +21,10 @@ __all__ = [
     "coef_inventory",
     "coef_plot",
     "score_plot",
+    "qc_summary",
 ]
 
 from ._version import get_versions
-__version__ = get_versions()['version']
+
+__version__ = get_versions()["version"]
 del get_versions
