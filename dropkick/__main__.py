@@ -212,7 +212,7 @@ def main():
         help="Random state for cross validation",
         default=18,
     )
-    run_parser.set_defaults(function=run)
+    run_parser.set_defaults(func=run)
 
     qc_parser = subparsers.add_parser(
         "qc", help="scRNA-seq quality control report.",
@@ -251,7 +251,7 @@ def main():
         help="Number of top genes by dropout rate to use for ambient profile. Default 10",
         default=10,
     )
-    qc_parser.set_defaults(function=qc)
+    qc_parser.set_defaults(func=qc)
 
     args = parser.parse_args()
     args.func(args)
