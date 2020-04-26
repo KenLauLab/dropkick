@@ -26,40 +26,40 @@ def check_dir_exists(path):
 
 def main():
     parser = argparse.ArgumentParser(prog="dropkick")
-
     parser.add_argument(
         "-V", "--version", action="version", version=get_versions()["version"],
     )
 
-    parser.add_argument(
+    common_parser = argparse.ArgumentParser(add_help=False)
+    common_parser.add_argument(
         "counts",
         type=str,
         help="Input (cell x gene) counts matrix as .h5ad or tab delimited text file",
     )
-    parser.add_argument(
+    common_parser.add_argument(
         "--output-dir",
         type=str,
         help="Output directory. Output will be placed in [output-dir]/[name]_dropkick.h5ad. Default './'",
         nargs="?",
         default=".",
     )
-    parser.add_argument(
+    common_parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Verbosity of glmnet module. Default False",
+        action="store_true",
+    )
+    common_parser.add_argument(
         "--min-genes",
         type=int,
         help="Minimum number of genes detected to keep cell. Default 50",
         default=50,
     )
-    parser.add_argument(
+    common_parser.add_argument(
         "--n-ambient",
         type=int,
         help="Number of top genes by dropout rate to use for ambient profile. Default 10",
         default=10,
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        help="Verbosity of glmnet module. Default False",
-        action="store_true",
     )
 
     subparsers = parser.add_subparsers()
