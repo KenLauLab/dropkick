@@ -65,7 +65,7 @@ def main():
     subparsers = parser.add_subparsers()
 
     run_parser = subparsers.add_parser(
-        "run", parents=[parser], help="Automated filtering of scRNA-seq data.",
+        "run", parents=[common_parser], help="Automated filtering of scRNA-seq data.",
     )
     run_parser.add_argument(
         "-m",
@@ -120,7 +120,7 @@ def main():
     run_parser.set_defaults(function=run)
 
     qc_parser = subparsers.add_parser(
-        "qc", parents=[parser], help="scRNA-seq quality control report.",
+        "qc", parents=[common_parser], help="scRNA-seq quality control report.",
     )
     qc_parser.set_defaults(function=qc)
 
