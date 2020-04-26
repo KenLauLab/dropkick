@@ -10,7 +10,9 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-import seaborn as sns; sns.set_style("white")
+import seaborn as sns
+
+sns.set_style("white")
 import scanpy as sc
 import time
 import threading
@@ -594,11 +596,16 @@ def coef_plot(adata, show=True):
     )
     # plot top three genes by coefficient value
     # get range of values for positioning text
-    val_range = adata.uns["dropkick_args"]["coef_path"].max() - adata.uns["dropkick_args"]["coef_path"].min()
+    val_range = (
+        adata.uns["dropkick_args"]["coef_path"].max()
+        - adata.uns["dropkick_args"]["coef_path"].min()
+    )
     [
         ax.text(
             x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
-            y=adata.var.dropkick_coef.max() + (0.15 * val_range) - (0.05 * val_range * x),
+            y=adata.var.dropkick_coef.max()
+            + (0.15 * val_range)
+            - (0.05 * val_range * x),
             s=" "
             + adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"]
             .nlargest(3)
@@ -612,7 +619,9 @@ def coef_plot(adata, show=True):
     [
         ax.text(
             x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
-            y=adata.var.dropkick_coef.min() - (0.20 * val_range) + (0.05 * val_range * x),
+            y=adata.var.dropkick_coef.min()
+            - (0.20 * val_range)
+            + (0.05 * val_range * x),
             s=" "
             + adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"]
             .nsmallest(3)
@@ -676,9 +685,6 @@ def score_plot(
         joint plot of dropkick_scores and metric distributions with
             corresponding training thresholds
     """
-    # convert args to list
-    if isinstance(metrics, str):
-        metrics = [metrics]
     # initialize joint plot object
     g = sns.jointplot(
         x=adata.obs[metrics[0]], y=adata.obs[metrics[1]], space=0, color="k",
@@ -699,62 +705,66 @@ def score_plot(
         alpha=0.5,
     )
     # plot training thresholds on scatter
-    if isinstance(adata.uns["dropkick_thresholds"][metrics[0]], np.ndarray):
-        [
-            plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-            for _x in adata.uns["dropkick_thresholds"][metrics[0]]
-        ]
-    else:
-        plt.axvline(
-            adata.uns["dropkick_thresholds"][metrics[0]],
-            linestyle="-",
-            color="k",
-            linewidth=2.5,
-            alpha=0.7,
-        )
-    if isinstance(adata.uns["dropkick_thresholds"][metrics[1]], np.ndarray):
-        [
-            plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-            for _x in adata.uns["dropkick_thresholds"][metrics[1]]
-        ]
-    else:
-        plt.axhline(
-            adata.uns["dropkick_thresholds"][metrics[1]],
-            linestyle="-",
-            color="k",
-            linewidth=2.5,
-            alpha=0.7,
-        )
+    if metrics[0] in adata.uns["dropkick_thresholds"]:
+        if isinstance(adata.uns["dropkick_thresholds"][metrics[0]], np.ndarray):
+            [
+                plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                for _x in adata.uns["dropkick_thresholds"][metrics[0]]
+            ]
+        else:
+            plt.axvline(
+                adata.uns["dropkick_thresholds"][metrics[0]],
+                linestyle="-",
+                color="k",
+                linewidth=2.5,
+                alpha=0.7,
+            )
+    if metrics[1] in adata.uns["dropkick_thresholds"]:
+        if isinstance(adata.uns["dropkick_thresholds"][metrics[1]], np.ndarray):
+            [
+                plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                for _x in adata.uns["dropkick_thresholds"][metrics[1]]
+            ]
+        else:
+            plt.axhline(
+                adata.uns["dropkick_thresholds"][metrics[1]],
+                linestyle="-",
+                color="k",
+                linewidth=2.5,
+                alpha=0.7,
+            )
     # change focus to x margin plot to continue threshold line
-    plt.sca(g.ax_marg_x)
-    if isinstance(adata.uns["dropkick_thresholds"][metrics[0]], np.ndarray):
-        [
-            plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-            for _x in adata.uns["dropkick_thresholds"][metrics[0]]
-        ]
-    else:
-        plt.axvline(
-            adata.uns["dropkick_thresholds"][metrics[0]],
-            linestyle="-",
-            color="k",
-            linewidth=2.5,
-            alpha=0.7,
-        )
+    if metrics[0] in adata.uns["dropkick_thresholds"]:
+        plt.sca(g.ax_marg_x)
+        if isinstance(adata.uns["dropkick_thresholds"][metrics[0]], np.ndarray):
+            [
+                plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                for _x in adata.uns["dropkick_thresholds"][metrics[0]]
+            ]
+        else:
+            plt.axvline(
+                adata.uns["dropkick_thresholds"][metrics[0]],
+                linestyle="-",
+                color="k",
+                linewidth=2.5,
+                alpha=0.7,
+            )
     # change focus to y margin plot to continue threshold line
-    plt.sca(g.ax_marg_y)
-    if isinstance(adata.uns["dropkick_thresholds"][metrics[1]], np.ndarray):
-        [
-            plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-            for _x in adata.uns["dropkick_thresholds"][metrics[1]]
-        ]
-    else:
-        plt.axhline(
-            adata.uns["dropkick_thresholds"][metrics[1]],
-            linestyle="-",
-            color="k",
-            linewidth=2.5,
-            alpha=0.7,
-        )
+    if metrics[1] in adata.uns["dropkick_thresholds"]:
+        plt.sca(g.ax_marg_y)
+        if isinstance(adata.uns["dropkick_thresholds"][metrics[1]], np.ndarray):
+            [
+                plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                for _x in adata.uns["dropkick_thresholds"][metrics[1]]
+            ]
+        else:
+            plt.axhline(
+                adata.uns["dropkick_thresholds"][metrics[1]],
+                linestyle="-",
+                color="k",
+                linewidth=2.5,
+                alpha=0.7,
+            )
     # add colorbar inside scatter axes
     axins1 = inset_axes(
         g.ax_joint,

@@ -136,11 +136,7 @@ def main():
             verbose=args.verbose,
         )
         # plot total counts distribution, gene dropout rates, and highest expressed genes
-        print(
-            "Saving QC summary plot to {}/{}_qc.png".format(
-                args.output_dir, name
-            )
-        )
+        print("Saving QC summary plot to {}/{}_qc.png".format(args.output_dir, name))
         _ = summary_plot(adata, show=False)
         plt.savefig("{}/{}_qc.png".format(args.output_dir, name))
 
@@ -178,7 +174,9 @@ def main():
         adata = recipe_dropkick(
             adata, filter=True, min_genes=args.min_genes, n_hvgs=None, verbose=False
         )
-        _ = score_plot(adata, args.metrics, show=False)
+        _ = score_plot(
+            adata, ["arcsinh_n_genes_by_counts", "pct_counts_ambient"], show=False
+        )
         plt.savefig("{}/{}_score.png".format(args.output_dir, name))
 
 
