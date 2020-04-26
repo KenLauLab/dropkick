@@ -185,7 +185,13 @@ def auto_thresh_obs(
     Returns:
         thresholds (dict): keys are obs_cols and values are threshold results
     """
-    thresholds = dict.fromkeys(obs_cols)  # initiate output dictionary
+    # convert to lists before looping
+    if isinstance(obs_cols, str):
+        obs_cols = [obs_cols]
+    if isinstance(methods, str):
+        methods = [methods]
+    # initiate output dictionary
+    thresholds = dict.fromkeys(obs_cols)
     for i in range(len(obs_cols)):
         tmp = np.array(adata.obs[obs_cols[i]])
         if methods[i] == "multiotsu":
@@ -259,6 +265,11 @@ def filter_thresh_obs(
     Returns:
         updated adata with filter labels in adata.obs[name]
     """
+    # convert to lists before looping
+    if isinstance(obs_cols, str):
+        obs_cols = [obs_cols]
+    if isinstance(directions, str):
+        directions = [directions]
     # initialize .obs column as all "good" cells
     adata.obs[name] = 1
     # if any criteria are NOT met, label cells "bad"
@@ -424,9 +435,17 @@ def dropkick(
 
     # 1) threshold chosen heuristics using automated methods
     print("Thresholding on heuristics for training labels:\n\t{}".format(metrics))
+    # convert args to list
+    if isinstance(metrics, str):
+        metrics = [metrics]
+    if isinstance(thresh_methods, str):
+        thresh_methods = [thresh_methods]
     adata_thresh = auto_thresh_obs(a, methods=thresh_methods, obs_cols=metrics)
 
     # 2) create labels from combination of thresholds
+    # convert args to list
+    if isinstance(directions, str):
+        directions = [directions]
     a = filter_thresh_obs(
         a,
         adata_thresh,
@@ -657,6 +676,9 @@ def score_plot(
         joint plot of dropkick_scores and metric distributions with
             corresponding training thresholds
     """
+    # convert args to list
+    if isinstance(metrics, str):
+        metrics = [metrics]
     # initialize joint plot object
     g = sns.jointplot(
         x=adata.obs[metrics[0]], y=adata.obs[metrics[1]], space=0, color="k",

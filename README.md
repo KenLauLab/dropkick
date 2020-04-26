@@ -7,7 +7,7 @@
 ---
 `dropkick` works primarily with [**Scanpy**](https://icb-scanpy.readthedocs-hosted.com/en/stable/)'s `AnnData` objects, and accepts input files in `.h5ad` or flat (`.csv`, `.tsv`) format. It also writes outputs to `.h5ad` files when called from the terminal.
 
-Installation via `pip` or from source requires a Fortran compiler. For Mac users, `brew install gcc` will take care of this.
+Installation via `pip` or from source requires a Fortran compiler (`brew install gcc` for Mac users).
 
 #### Install from PyPI:
 ```bash
@@ -22,7 +22,7 @@ python setup.py install
 ```
 
 ---
-`dropkick` can be run as a command line tool, or interactively with the [`scanpy`](https://icb-scanpy.readthedocs-hosted.com/en/stable/) single-cell analysis suite.
+`dropkick` can be run as a command line tool or interactively with the [`scanpy`](https://icb-scanpy.readthedocs-hosted.com/en/stable/) single-cell analysis suite.
 
 #### Usage from command line:
 ```bash
@@ -33,7 +33,7 @@ Output will be saved in a new `.h5ad` file containing __dropkick__ scores, label
 
 You can also run the `dropkick.qc` module from terminal for a quick look at the total UMI distribution and ambient genes, saved as `*_qc.png`:
 ```bash
-python -m dropkick path/to/counts.h5ad --qc
+dropkick path/to/counts.h5ad --qc
 ```
 
 See [`dropkick_tutorial.ipynb`](dropkick_tutorial.ipynb) for an interactive walkthrough of the `dropkick` pipeline and its outputs.
