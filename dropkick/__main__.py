@@ -102,7 +102,7 @@ def qc(args):
     )
     # plot total counts distribution, gene dropout rates, and highest expressed genes
     print("Saving QC summary plot to {}/{}_qc.png".format(args.output_dir, name))
-    _ = summary_plot(adata, show=False)
+    _ = qc_summary(adata, show=False)
     plt.savefig("{}/{}_qc.png".format(args.output_dir, name))
 
 
