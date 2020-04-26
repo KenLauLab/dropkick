@@ -120,6 +120,7 @@ def main():
     )
     common_parser.add_argument(
         "--output-dir",
+        required=False,
         type=str,
         help="Output directory. Output will be placed in [output-dir]/[name]_dropkick.h5ad. Default './'",
         nargs="?",
@@ -128,17 +129,20 @@ def main():
     common_parser.add_argument(
         "-v",
         "--verbose",
+        required=False,
         help="Verbosity of glmnet module. Default False",
         action="store_true",
     )
     common_parser.add_argument(
         "--min-genes",
+        required=False,
         type=int,
         help="Minimum number of genes detected to keep cell. Default 50",
         default=50,
     )
     common_parser.add_argument(
         "--n-ambient",
+        required=False,
         type=int,
         help="Number of top genes by dropout rate to use for ambient profile. Default 10",
         default=10,
@@ -152,6 +156,7 @@ def main():
     run_parser.add_argument(
         "-m",
         "--metrics",
+        required=False,
         type=str,
         help="Heuristics for thresholding. Default ['arcsinh_n_genes_by_counts','pct_counts_ambient']",
         nargs="+",
@@ -159,6 +164,7 @@ def main():
     )
     run_parser.add_argument(
         "--thresh-methods",
+        required=False,
         type=str,
         help="Methods used for automatic thresholding on heuristics. Default ['multiotsu','otsu']",
         nargs="+",
@@ -166,6 +172,7 @@ def main():
     )
     run_parser.add_argument(
         "--directions",
+        required=False,
         type=str,
         help="Direction of thresholding for each heuristic. Default ['above','below']",
         nargs="+",
@@ -173,12 +180,14 @@ def main():
     )
     run_parser.add_argument(
         "--n-hvgs",
+        required=False,
         type=int,
         help="Number of highly variable genes for training model. Default 2000",
         default=2000,
     )
     run_parser.add_argument(
         "--alphas",
+        required=False,
         type=float,
         help="Ratios between l1 and l2 regularization for regression model. Default [0.1]",
         nargs="*",
@@ -186,18 +195,24 @@ def main():
     )
     run_parser.add_argument(
         "--n-iter",
+        required=False,
         type=int,
         help="Maximum number of iterations for optimization. Default 1000",
         default=1000,
     )
     run_parser.add_argument(
         "--n-jobs",
+        required=False,
         type=int,
         help="Maximum number of threads for cross validation. Default -1",
         default=-1,
     )
     run_parser.add_argument(
-        "--seed", type=int, help="Random state for cross validation", default=18,
+        "--seed",
+        required=False,
+        type=int,
+        help="Random state for cross validation",
+        default=18,
     )
     run_parser.set_defaults(function=run)
 
