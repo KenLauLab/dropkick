@@ -24,6 +24,88 @@ def check_dir_exists(path):
             raise
 
 
+def prepare(args):
+    """
+    read counts into AnnData object and get directory and name for outputs
+    """
+    # read in counts data
+    print("\nReading in unfiltered counts from {}".format(args.counts), end="")
+    adata = sc.read(args.counts)
+    print(" - {} barcodes and {} genes".format(adata.shape[0], adata.shape[1]))
+
+    # check that output directory exists, create it if needed.
+    check_dir_exists(args.output_dir)
+    # get basename of file for writing outputs
+    name = os.path.splitext(os.path.basename(args.counts))[0]
+
+    return adata, name
+
+
+def run(args):
+    """
+    run dropkick filtering pipeline and save results
+    """
+    # read in counts and prepare output directory
+    adata, name = prepare(args)
+    # run main dropkick module
+    _ = dropkick(
+        adata,
+        min_genes=args.min_genes,
+        n_ambient=args.n_ambient,
+        n_hvgs=args.n_hvgs,
+        metrics=args.metrics,
+        thresh_methods=args.thresh_methods,
+        directions=args.directions,
+        alphas=args.alphas,
+        max_iter=args.n_iter,
+        n_jobs=args.n_jobs,
+        seed=args.seed,
+        verbose=args.verbose,
+    )
+    # save new labels in .h5ad
+    print("Writing updated counts to {}/{}_dropkick.h5ad".format(args.output_dir, name))
+    adata.write(
+        "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
+    )
+    # generate plot of dropkick coefficient values and CV scores vs tested lambda_path
+    print("Saving coefficient plot to {}/{}_coef.png".format(args.output_dir, name))
+    _ = coef_plot(adata, show=False)
+    plt.savefig("{}/{}_coef.png".format(args.output_dir, name))
+    # generate plot of chosen training thresholds on heuristics
+    print("Saving score plot to {}/{}_score.png".format(args.output_dir, name))
+    adata = recipe_dropkick(
+        adata, filter=True, min_genes=args.min_genes, n_hvgs=None, verbose=False
+    )
+    _ = score_plot(
+        adata, ["arcsinh_n_genes_by_counts", "pct_counts_ambient"], show=False
+    )
+    plt.savefig("{}/{}_score.png".format(args.output_dir, name))
+
+
+def qc(args):
+    """
+    generate dropkick qc report
+    """
+    # read in counts and prepare output directory
+    adata, name = prepare(args)
+
+    # perform ambient analysis and QC
+    # preprocess and calculate metrics
+    adata = recipe_dropkick(
+        adata,
+        filter=True,
+        min_genes=args.min_genes,
+        n_hvgs=None,
+        X_final="raw_counts",
+        n_ambient=args.n_ambient,
+        verbose=args.verbose,
+    )
+    # plot total counts distribution, gene dropout rates, and highest expressed genes
+    print("Saving QC summary plot to {}/{}_qc.png".format(args.output_dir, name))
+    _ = summary_plot(adata, show=False)
+    plt.savefig("{}/{}_qc.png".format(args.output_dir, name))
+
+
 def main():
     parser = argparse.ArgumentParser(prog="dropkick")
     parser.add_argument(
@@ -126,85 +208,3 @@ def main():
 
     args = parser.parse_args()
     args.func(args)
-
-
-def prepare(args):
-    """
-    read counts into AnnData object and get directory and name for outputs
-    """
-    # read in counts data
-    print("\nReading in unfiltered counts from {}".format(args.counts), end="")
-    adata = sc.read(args.counts)
-    print(" - {} barcodes and {} genes".format(adata.shape[0], adata.shape[1]))
-
-    # check that output directory exists, create it if needed.
-    check_dir_exists(args.output_dir)
-    # get basename of file for writing outputs
-    name = os.path.splitext(os.path.basename(args.counts))[0]
-
-    return adata, name
-
-
-def run(args):
-    """
-    run dropkick filtering pipeline and save results
-    """
-    # read in counts and prepare output directory
-    adata, name = prepare(args)
-    # run main dropkick module
-    _ = dropkick(
-        adata,
-        min_genes=args.min_genes,
-        n_ambient=args.n_ambient,
-        n_hvgs=args.n_hvgs,
-        metrics=args.metrics,
-        thresh_methods=args.thresh_methods,
-        directions=args.directions,
-        alphas=args.alphas,
-        max_iter=args.n_iter,
-        n_jobs=args.n_jobs,
-        seed=args.seed,
-        verbose=args.verbose,
-    )
-    # save new labels in .h5ad
-    print("Writing updated counts to {}/{}_dropkick.h5ad".format(args.output_dir, name))
-    adata.write(
-        "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
-    )
-    # generate plot of dropkick coefficient values and CV scores vs tested lambda_path
-    print("Saving coefficient plot to {}/{}_coef.png".format(args.output_dir, name))
-    _ = coef_plot(adata, show=False)
-    plt.savefig("{}/{}_coef.png".format(args.output_dir, name))
-    # generate plot of chosen training thresholds on heuristics
-    print("Saving score plot to {}/{}_score.png".format(args.output_dir, name))
-    adata = recipe_dropkick(
-        adata, filter=True, min_genes=args.min_genes, n_hvgs=None, verbose=False
-    )
-    _ = score_plot(
-        adata, ["arcsinh_n_genes_by_counts", "pct_counts_ambient"], show=False
-    )
-    plt.savefig("{}/{}_score.png".format(args.output_dir, name))
-
-
-def qc(args):
-    """
-    generate dropkick qc report
-    """
-    # read in counts and prepare output directory
-    adata, name = prepare(args)
-
-    # perform ambient analysis and QC
-    # preprocess and calculate metrics
-    adata = recipe_dropkick(
-        adata,
-        filter=True,
-        min_genes=args.min_genes,
-        n_hvgs=None,
-        X_final="raw_counts",
-        n_ambient=args.n_ambient,
-        verbose=args.verbose,
-    )
-    # plot total counts distribution, gene dropout rates, and highest expressed genes
-    print("Saving QC summary plot to {}/{}_qc.png".format(args.output_dir, name))
-    _ = summary_plot(adata, show=False)
-    plt.savefig("{}/{}_qc.png".format(args.output_dir, name))
