@@ -29,7 +29,7 @@ from .logistic import LogitNet
 def recipe_dropkick(
     adata,
     filter=True,
-    min_genes=1,
+    min_genes=50,
     calc_metrics=True,
     mito_names="^mt-|^MT-",
     n_ambient=10,
@@ -45,15 +45,15 @@ def recipe_dropkick(
         adata (AnnData.AnnData): object with raw counts data in .X
         filter (bool): remove cells with less than min_genes detected
             and genes with zero total counts
-        min_genes (int): threshold for minimum genes detected. Default 50.
+        min_genes (int): threshold for minimum genes detected.
             Ignored if filter==False.
         calc_metrics (bool): if False, do not calculate metrics in .obs/.var
         mito_names (str): substring encompassing mitochondrial gene names for
             calculation of mito expression. Ignored if calc_metrics==False.
-        n_ambient (int): number of ambient genes to call. top genes by cells.
+        n_ambient (int): number of ambient genes to call (top genes by cells).
             Ignored if calc_metrics==False.
         target_sum (int): total sum of counts for each cell prior to arcsinh 
-            or log1p transformations; default None to use median counts.
+            or log1p transformations; if None, use median counts.
         n_hvgs (int or None): number of HVGs to calculate using Seurat method.
             if None, do not calculate HVGs.
         X_final (str): which normalization layer should be left in .X slot?
@@ -62,7 +62,7 @@ def recipe_dropkick(
 
     Returns:
         adata (AnnData.AnnData): updated object includes:
-            - useful .obs and .var columns
+            - useful .obs and .var columns (if calc_metrics==True)
                 ("total_counts", "pct_counts_mito", "n_genes_by_counts", etc.)
             - raw counts (adata.layers["raw_counts"])
             - arcsinh-transformed normalized counts (adata.layers["arcsinh_norm"])
@@ -182,7 +182,7 @@ def auto_thresh_obs(
     Parameters:
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
         obs_cols (list of str): name of column(s) to threshold from adata.obs
-        methods (list of str): one of 'otsu' (default), 'multiotsu', 'li', or 'mean'
+        methods (list of str): one of 'otsu', 'multiotsu', 'li', or 'mean'
 
     Returns:
         thresholds (dict): keys are obs_cols and values are threshold results
@@ -212,7 +212,7 @@ def auto_thresh_obs(
     return thresholds
 
 
-def plot_thresh_obs(adata, thresholds, bins=40, show=True):
+def plot_thresh_obs(adata, thresholds, bins=40, save_to=None, verbose=True):
     """
     plot automated thresholding on metrics in adata.obs as output by auto_thresh_obs()
 
@@ -220,10 +220,11 @@ def plot_thresh_obs(adata, thresholds, bins=40, show=True):
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
         thresholds (dict): output of auto_thresh_obs() function
         bins (int): number of bins for histogram
-        show (bool): show plot or return object
+        save_to (str): path to .png file for saving figure; returns figure by default
+        verbose (bool): print updates to console
 
     Returns:
-        plot of distributions of obs_cols in thresholds dictionary with corresponding threshold values
+        plot of distributions of obs_cols in thresholds dictionary with corresponding thresholds
     """
     fig, axes = plt.subplots(
         ncols=len(thresholds), nrows=1, figsize=(len(thresholds) * 4, 4), sharey=True
@@ -248,8 +249,10 @@ def plot_thresh_obs(adata, thresholds, bins=40, show=True):
             axes.axvline(list(thresholds.values())[0], color="r")
         axes.set_title(list(thresholds.keys())[0])
     fig.tight_layout()
-    if show:
-        plt.show()
+    if save_to is not None:
+        if verbose:
+            print("Saving threshold plot to {}".format(save_to))
+        fig.savefig(save_to)
     else:
         return fig
 
@@ -270,10 +273,10 @@ def filter_thresh_obs(
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
         thresholds (dict): output of auto_thresh_obs() function
         obs_cols (list of str): name of column(s) to threshold from adata.obs
-        directions (list of str): 'below' or 'above', indicating which direction to keep (label=1)
-        inclusive (bool): include cells at the thresholds? default True.
+        directions (list of str): 'below' or 'above', indicating which direction to keep
+        inclusive (bool): include cells at the thresholds?
         name (str): name of .obs col containing final labels
-        verbose (bool): print updates to the console?
+        verbose (bool): print updates to the console
 
     Returns:
         updated adata with filter labels in adata.obs[name]
@@ -352,7 +355,7 @@ def filter_thresh_obs(
 
 def dropkick(
     adata,
-    min_genes=1,
+    min_genes=50,
     mito_names="^mt-|^MT-",
     n_ambient=10,
     n_hvgs=2000,
@@ -371,18 +374,17 @@ def dropkick(
     Parameters:
         adata (anndata.AnnData): object containing unfiltered, raw scRNA-seq
             counts in .X layer
-        min_genes (int): threshold for minimum genes detected. Default 50.
-            Ignores all cells with less than min_genes (dropkick label = 0).
+        min_genes (int): threshold for minimum genes detected. Ignores all cells
+            with less than min_genes (dropkick label = 0).
         mito_names (str): substring encompassing mitochondrial gene names for
             calculation of mito expression
         n_ambient (int): number of ambient genes to call. top genes by cells.
-        n_hvgs (int or None): number of HVGs to calculate using Seurat method
+        n_hvgs (int or None): number of HVGs to calculate using Seurat method.
             if None, do not calculate HVGs
         metrics (list of str): name of column(s) to threshold from adata.obs
-        thresh_methods (list of str): one of 'otsu' (default), 'multiotsu',
-            'li', or 'mean'
+        thresh_methods (list of str): one of 'otsu', 'multiotsu', 'li', or 'mean'
         directions (list of str): 'below' or 'above', indicating which
-            direction to keep (label=1)
+            direction to keep (dropkick label = 1)
         alphas (list of float): alpha values to test using glmnet with n-fold
             cross validation
         max_iter (int): number of iterations for glmnet optimization
@@ -547,14 +549,15 @@ def coef_inventory(adata, n=10):
     )
 
 
-def coef_plot(adata, show=True):
+def coef_plot(adata, save_to=None, verbose=True):
     """
     plot dropkick coefficient values and cross validation (CV) scores for tested values
     of lambda (lambda_path)
 
     Parameters:
         adata (anndata.AnnData): object generated from dropkick
-        show (bool): show plot or return object
+        save_to (str): path to .png file for saving figure; returns figure by default
+        verbose (bool): print updates to console
 
     Returns:
         plot of CV scores (mean +/- SEM) and coefficient values (coef_path) versus
@@ -639,14 +642,16 @@ def coef_plot(adata, show=True):
     )
     plt.legend()
     fig.tight_layout()
-    if show:
-        plt.show()
+    if save_to is not None:
+        if verbose:
+            print("Saving coefficient plot to {}".format(save_to))
+        fig.savefig(save_to)
     else:
         return fig
 
 
 def score_plot(
-    adata, metrics=["arcsinh_n_genes_by_counts", "pct_counts_ambient"], show=True
+    adata, metrics=["arcsinh_n_genes_by_counts", "pct_counts_ambient"], save_to=None, verbose=True
 ):
     """
     plot scatter of barcodes across two metrics, with points colored by dropkick_score.
@@ -655,7 +660,8 @@ def score_plot(
     Parameters:
         adata (anndata.AnnData): object containing dropkick-processed scRNA-seq data
         metrics (list of str): name of metrics to plot scatter and histograms for
-        show (bool): show plot or return object
+        save_to (str): path to .png file for saving figure; returns figure by default
+        verbose (bool): print updates to console
 
     Returns:
         joint plot of dropkick_scores and metric distributions with
@@ -757,7 +763,9 @@ def score_plot(
         ticks=[0.1, 0.5, 0.9],
     )
     cbar.solids.set_edgecolor("face")
-    if show:
-        plt.show()
+    if save_to is not None:
+        if verbose:
+            print("Saving score plot to {}".format(save_to))
+        g.savefig(save_to)
     else:
         return g

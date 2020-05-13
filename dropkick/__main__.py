@@ -68,18 +68,14 @@ def run(args):
         "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
     )
     # generate plot of dropkick coefficient values and CV scores vs tested lambda_path
-    print("Saving coefficient plot to {}/{}_coef.png".format(args.output_dir, name))
-    _ = coef_plot(adata, show=False)
-    plt.savefig("{}/{}_coef.png".format(args.output_dir, name))
+    coef_plot(adata, save_to="{}/{}_coef.png".format(args.output_dir, name), verbose=args.verbose)
     # generate plot of chosen training thresholds on heuristics
-    print("Saving score plot to {}/{}_score.png".format(args.output_dir, name))
     adata = recipe_dropkick(
         adata, filter=True, min_genes=args.min_genes, n_hvgs=None, verbose=False
     )
-    _ = score_plot(
-        adata, ["arcsinh_n_genes_by_counts", "pct_counts_ambient"], show=False
+    score_plot(
+        adata, ["arcsinh_n_genes_by_counts", "pct_counts_ambient"], save_to="{}/{}_score.png".format(args.output_dir, name), verbose=args.verbose
     )
-    plt.savefig("{}/{}_score.png".format(args.output_dir, name))
 
 
 def qc(args):
@@ -101,9 +97,7 @@ def qc(args):
         verbose=args.verbose,
     )
     # plot total counts distribution, gene dropout rates, and highest expressed genes
-    print("Saving QC summary plot to {}/{}_qc.png".format(args.output_dir, name))
-    _ = qc_summary(adata, show=False)
-    plt.savefig("{}/{}_qc.png".format(args.output_dir, name))
+    qc_summary(adata, save_to="{}/{}_qc.png".format(args.output_dir, name), verbose=args.verbose)
 
 
 def main():
@@ -126,7 +120,7 @@ def main():
         "--output-dir",
         required=False,
         type=str,
-        help="Output directory. Output will be placed in [output-dir]/[name]_dropkick.h5ad. Default './'",
+        help="Output directory. Output will be placed in [output-dir]/[name]_dropkick.h5ad. Default './'.",
         nargs="?",
         default=".",
     )
@@ -134,21 +128,21 @@ def main():
         "-v",
         "--verbose",
         required=False,
-        help="Verbosity of glmnet module. Default False",
+        help="Print processing updates to console.",
         action="store_true",
     )
     run_parser.add_argument(
         "--min-genes",
         required=False,
         type=int,
-        help="Minimum number of genes detected to keep cell. Default 1",
-        default=1,
+        help="Minimum number of genes detected to keep cell. Default 50.",
+        default=50,
     )
     run_parser.add_argument(
         "--n-ambient",
         required=False,
         type=int,
-        help="Number of top genes by dropout rate to use for ambient profile. Default 10",
+        help="Number of top genes by dropout rate to use for ambient profile. Default 10.",
         default=10,
     )
     run_parser.add_argument(
@@ -156,7 +150,7 @@ def main():
         "--metrics",
         required=False,
         type=str,
-        help="Heuristics for thresholding. Default ['arcsinh_n_genes_by_counts','pct_counts_ambient']",
+        help="Heuristics for thresholding.",
         nargs="+",
         default=["arcsinh_n_genes_by_counts", "pct_counts_ambient"],
     )
@@ -164,7 +158,7 @@ def main():
         "--thresh-methods",
         required=False,
         type=str,
-        help="Methods used for automatic thresholding on heuristics. Default ['multiotsu','otsu']",
+        help="Method used for automatic thresholding on each heuristic in '--metrics'.",
         nargs="+",
         default=["multiotsu", "otsu"],
     )
@@ -172,7 +166,7 @@ def main():
         "--directions",
         required=False,
         type=str,
-        help="Direction of thresholding for each heuristic. Default ['above','below']",
+        help="Direction of thresholding for each heuristic in '--metrics'.",
         nargs="+",
         default=["above", "below"],
     )
@@ -180,14 +174,14 @@ def main():
         "--n-hvgs",
         required=False,
         type=int,
-        help="Number of highly variable genes for training model. Default 2000",
+        help="Number of highly variable genes for training model. Default 2000.",
         default=2000,
     )
     run_parser.add_argument(
         "--alphas",
         required=False,
         type=float,
-        help="Ratios between l1 and l2 regularization for regression model. Default [0.1]",
+        help="Ratio(s) between l1 and l2 regularization for regression model. Default 0.1.",
         nargs="*",
         default=[0.1],
     )
@@ -195,21 +189,21 @@ def main():
         "--n-iter",
         required=False,
         type=int,
-        help="Maximum number of iterations for optimization. Default 1000",
+        help="Maximum number of iterations for optimization. Default 1000.",
         default=1000,
     )
     run_parser.add_argument(
         "--n-jobs",
         required=False,
         type=int,
-        help="Maximum number of threads for cross validation. Default -1",
+        help="Maximum number of threads for cross validation. Default -1.",
         default=-1,
     )
     run_parser.add_argument(
         "--seed",
         required=False,
         type=int,
-        help="Random state for cross validation",
+        help="Random state for cross validation.",
         default=18,
     )
     run_parser.set_defaults(func=run)
@@ -226,7 +220,7 @@ def main():
         "--output-dir",
         required=False,
         type=str,
-        help="Output directory. Output will be placed in [output-dir]/[name]_dropkick.h5ad. Default './'",
+        help="Output directory. Output will be placed in [output-dir]/[name]_dropkick.h5ad. Default './'.",
         nargs="?",
         default=".",
     )
@@ -234,21 +228,21 @@ def main():
         "-v",
         "--verbose",
         required=False,
-        help="Verbosity of glmnet module. Default False",
+        help="Print processing updates to console.",
         action="store_true",
     )
     qc_parser.add_argument(
         "--min-genes",
         required=False,
         type=int,
-        help="Minimum number of genes detected to keep cell. Default 50",
+        help="Minimum number of genes detected to keep cell. Default 50.",
         default=50,
     )
     qc_parser.add_argument(
         "--n-ambient",
         required=False,
         type=int,
-        help="Number of top genes by dropout rate to use for ambient profile. Default 10",
+        help="Number of top genes by dropout rate to use for ambient profile. Default 10.",
         default=10,
     )
     qc_parser.set_defaults(func=qc)

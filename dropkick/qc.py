@@ -145,13 +145,14 @@ def counts_plot(adata, show=False, ax=None):
         return ax
 
 
-def qc_summary(adata, show=True):
+def qc_summary(adata, save_to=None, verbose=True):
     """
     plot summary of counts distribution and ambient genes
 
     Parameters:
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
-        show (bool): show plot or return object
+        save_to (str): path to .png file for saving figure; returns figure by default
+        verbose (bool): print updates to console
 
     Returns:
         counts_plot(), sc.pl.highest_expr_genes(), and dropout_plot() in single figure
@@ -168,5 +169,9 @@ def qc_summary(adata, show=True):
     dropout_plot(adata, ax=ax3, show=False)
     fig.tight_layout()
     # return
-    if not show:
+    if save_to is not None:
+        if verbose:
+            print("Saving QC plot to {}".format(save_to))
+        fig.savefig(save_to)
+    else:
         return fig
