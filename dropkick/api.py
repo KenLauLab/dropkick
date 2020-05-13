@@ -29,7 +29,7 @@ from .logistic import LogitNet
 def recipe_dropkick(
     adata,
     filter=True,
-    min_genes=50,
+    min_genes=1,
     calc_metrics=True,
     mito_names="^mt-|^MT-",
     n_ambient=10,
@@ -228,14 +228,25 @@ def plot_thresh_obs(adata, thresholds, bins=40, show=True):
     fig, axes = plt.subplots(
         ncols=len(thresholds), nrows=1, figsize=(len(thresholds) * 4, 4), sharey=True
     )
-    axes[0].set_ylabel("cells")
-    for i in range(len(thresholds)):
-        axes[i].hist(adata.obs[list(thresholds.keys())[i]], bins=bins)
-        if isinstance(list(thresholds.values())[i], np.ndarray):
-            [axes[i].axvline(_x, color="r") for _x in list(thresholds.values())[i]]
+    # if multiple plots, loop through axes
+    if len(thresholds) > 1:
+        axes[0].set_ylabel("cells")
+        for i in range(len(thresholds)):
+            axes[i].hist(adata.obs[list(thresholds.keys())[i]], bins=bins)
+            if isinstance(list(thresholds.values())[i], np.ndarray):
+                [axes[i].axvline(_x, color="r") for _x in list(thresholds.values())[i]]
+            else:
+                axes[i].axvline(list(thresholds.values())[i], color="r")
+            axes[i].set_title(list(thresholds.keys())[i])
+    # if single plot, only one set of axes in subplot
+    else:
+        axes.set_ylabel("cells")
+        axes.hist(adata.obs[list(thresholds.keys())[0]], bins=bins)
+        if isinstance(list(thresholds.values())[0], np.ndarray):
+            [axes.axvline(_x, color="r") for _x in list(thresholds.values())[0]]
         else:
-            axes[i].axvline(list(thresholds.values())[i], color="r")
-        axes[i].set_title(list(thresholds.keys())[i])
+            axes.axvline(list(thresholds.values())[0], color="r")
+        axes.set_title(list(thresholds.keys())[0])
     fig.tight_layout()
     if show:
         plt.show()
@@ -278,42 +289,7 @@ def filter_thresh_obs(
     for i in range(len(obs_cols)):
         if isinstance(thresholds[obs_cols[i]], np.ndarray):
 
-            # if multiple thresholds, filter first
-            n_barcodes = adata.n_obs  # save for printing
-            if directions[i] == "above":
-                # use first threshold [0] as minimum for filtering
-                if inclusive:
-                    adata = adata[
-                        adata.obs[obs_cols[i]] > thresholds[obs_cols[i]][0], :
-                    ].copy()
-                else:
-                    adata = adata[
-                        adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]][0], :
-                    ].copy()
-                if verbose:
-                    print(
-                        "Ignoring {} barcodes below first threshold on {}".format(
-                            n_barcodes - adata.shape[0], obs_cols[i]
-                        )
-                    )
-            elif directions[i] == "below":
-                # use first threshold [0] as maximum for filtering
-                if inclusive:
-                    adata = adata[
-                        adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]][1], :
-                    ].copy()
-                else:
-                    adata = adata[
-                        adata.obs[obs_cols[i]] < thresholds[obs_cols[i]][1], :
-                    ].copy()
-                if verbose:
-                    print(
-                        "Ignoring {} barcodes above second threshold on {}".format(
-                            n_barcodes - adata.shape[0], obs_cols[i]
-                        )
-                    )
-
-            # then, set labels on remaining barcodes as usual
+            # set labels using second threshold for "above"
             if directions[i] == "above":
                 if inclusive:
                     adata.obs.loc[
@@ -327,6 +303,7 @@ def filter_thresh_obs(
                         & (adata.obs[obs_cols[i]] < thresholds[obs_cols[i]][1]),
                         name,
                     ] = 0
+            # set labels using first threshold for "below"
             elif directions[i] == "below":
                 if inclusive:
                     adata.obs.loc[
@@ -375,7 +352,7 @@ def filter_thresh_obs(
 
 def dropkick(
     adata,
-    min_genes=50,
+    min_genes=1,
     mito_names="^mt-|^MT-",
     n_ambient=10,
     n_hvgs=2000,
@@ -406,7 +383,7 @@ def dropkick(
             'li', or 'mean'
         directions (list of str): 'below' or 'above', indicating which
             direction to keep (label=1)
-        alphas (tuple of int): alpha values to test using glmnet with n-fold
+        alphas (list of float): alpha values to test using glmnet with n-fold
             cross validation
         max_iter (int): number of iterations for glmnet optimization
         n_jobs (int): number of threads for cross validation by glmnet
@@ -414,7 +391,6 @@ def dropkick(
         verbose (bool): verbosity for glmnet training and warnings
 
     Returns:
-        adata_thresh (dict): dictionary of automated thresholds on heuristics
         rc (LogisticRegression): trained logistic regression classifier
 
         updates adata inplace to include 'train', 'dropkick_score', and

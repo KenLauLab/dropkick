@@ -141,8 +141,8 @@ def main():
         "--min-genes",
         required=False,
         type=int,
-        help="Minimum number of genes detected to keep cell. Default 50",
-        default=50,
+        help="Minimum number of genes detected to keep cell. Default 1",
+        default=1,
     )
     run_parser.add_argument(
         "--n-ambient",
