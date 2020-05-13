@@ -68,13 +68,20 @@ def run(args):
         "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
     )
     # generate plot of dropkick coefficient values and CV scores vs tested lambda_path
-    coef_plot(adata, save_to="{}/{}_coef.png".format(args.output_dir, name), verbose=args.verbose)
+    coef_plot(
+        adata,
+        save_to="{}/{}_coef.png".format(args.output_dir, name),
+        verbose=args.verbose,
+    )
     # generate plot of chosen training thresholds on heuristics
     adata = recipe_dropkick(
         adata, filter=True, min_genes=args.min_genes, n_hvgs=None, verbose=False
     )
     score_plot(
-        adata, ["arcsinh_n_genes_by_counts", "pct_counts_ambient"], save_to="{}/{}_score.png".format(args.output_dir, name), verbose=args.verbose
+        adata,
+        ["arcsinh_n_genes_by_counts", "pct_counts_ambient"],
+        save_to="{}/{}_score.png".format(args.output_dir, name),
+        verbose=args.verbose,
     )
 
 
@@ -97,7 +104,11 @@ def qc(args):
         verbose=args.verbose,
     )
     # plot total counts distribution, gene dropout rates, and highest expressed genes
-    qc_summary(adata, save_to="{}/{}_qc.png".format(args.output_dir, name), verbose=args.verbose)
+    qc_summary(
+        adata,
+        save_to="{}/{}_qc.png".format(args.output_dir, name),
+        verbose=args.verbose,
+    )
 
 
 def main():
@@ -208,9 +219,7 @@ def main():
     )
     run_parser.set_defaults(func=run)
 
-    qc_parser = subparsers.add_parser(
-        "qc", help="scRNA-seq quality control report.",
-    )
+    qc_parser = subparsers.add_parser("qc", help="scRNA-seq quality control report.",)
     qc_parser.add_argument(
         "counts",
         type=str,

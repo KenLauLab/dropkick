@@ -651,7 +651,10 @@ def coef_plot(adata, save_to=None, verbose=True):
 
 
 def score_plot(
-    adata, metrics=["arcsinh_n_genes_by_counts", "pct_counts_ambient"], save_to=None, verbose=True
+    adata,
+    metrics=["arcsinh_n_genes_by_counts", "pct_counts_ambient"],
+    save_to=None,
+    verbose=True,
 ):
     """
     plot scatter of barcodes across two metrics, with points colored by dropkick_score.
@@ -669,7 +672,11 @@ def score_plot(
     """
     # initialize joint plot object
     g = sns.jointplot(
-        x=adata.obs[metrics[0]], y=adata.obs[metrics[1]], space=0, color="k",
+        x=adata.obs[metrics[0]],
+        y=adata.obs[metrics[1]],
+        space=0,
+        color="k",
+        marginal_kws=dict(bins=40),
     )
     # change to focus on scatter plot
     g.ax_joint.cla()
