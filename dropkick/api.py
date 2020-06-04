@@ -173,8 +173,9 @@ def recipe_dropkick(
 
 def auto_thresh_obs(
     adata,
-    obs_cols=["arcsinh_n_genes_by_counts", "pct_counts_ambient"],
-    methods=["multiotsu", "otsu"],
+    obs_cols=["arcsinh_n_genes_by_counts"],
+    methods=["multiotsu"],
+    directions=["above"],
 ):
     """
     automated thresholding on metrics in adata.obs
@@ -183,31 +184,39 @@ def auto_thresh_obs(
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
         obs_cols (list of str): name of column(s) to threshold from adata.obs
         methods (list of str): one of 'otsu', 'multiotsu', 'li', or 'mean'
+        directions (list of str): 'below' or 'above', indicating which direction to keep
 
     Returns:
-        thresholds (dict): keys are obs_cols and values are threshold results
+        thresholds (dict): keys are obs_cols and values are dictionaries with
+        "thresh" : threshold results & "direction" : direction to keep for training
     """
     # convert to lists before looping
     if isinstance(obs_cols, str):
         obs_cols = [obs_cols]
     if isinstance(methods, str):
         methods = [methods]
+    if isinstance(directions, str):
+        methods = [directions]
     # initiate output dictionary
     thresholds = dict.fromkeys(obs_cols)
+    # add thresholds as subkey
     for i in range(len(obs_cols)):
-        tmp = np.array(adata.obs[obs_cols[i]])
+        thresholds[obs_cols[i]] = {}  # initiate empty dict
+        tmp = np.array(adata.obs[obs_cols[i]])  # grab values to threshold
         if methods[i] == "multiotsu":
-            thresholds[obs_cols[i]] = threshold_multiotsu(tmp)
+            thresholds[obs_cols[i]]["thresh"] = threshold_multiotsu(tmp)
         elif methods[i] == "otsu":
-            thresholds[obs_cols[i]] = threshold_otsu(tmp)
+            thresholds[obs_cols[i]]["thresh"] = threshold_otsu(tmp)
         elif methods[i] == "li":
-            thresholds[obs_cols[i]] = threshold_li(tmp)
+            thresholds[obs_cols[i]]["thresh"] = threshold_li(tmp)
         elif methods[i] == "mean":
-            thresholds[obs_cols[i]] = threshold_mean(tmp)
+            thresholds[obs_cols[i]]["thresh"] = threshold_mean(tmp)
         else:
             raise ValueError(
                 "Please provide a valid threshold method ('otsu', 'multiotsu', 'li', 'mean')."
             )
+        # add direction for thresholding as subkey
+        thresholds[obs_cols[i]]["direction"] = directions[i]
 
     return thresholds
 
@@ -234,8 +243,11 @@ def plot_thresh_obs(adata, thresholds, bins=40, save_to=None, verbose=True):
         axes[0].set_ylabel("cells")
         for i in range(len(thresholds)):
             axes[i].hist(adata.obs[list(thresholds.keys())[i]], bins=bins)
-            if isinstance(list(thresholds.values())[i], np.ndarray):
-                [axes[i].axvline(_x, color="r") for _x in list(thresholds.values())[i]]
+            if isinstance(list(thresholds.values())[i]["thresh"], np.ndarray):
+                [
+                    axes[i].axvline(_x, color="r")
+                    for _x in list(thresholds.values())[i]["thresh"]
+                ]
             else:
                 axes[i].axvline(list(thresholds.values())[i], color="r")
             axes[i].set_title(list(thresholds.keys())[i])
@@ -243,10 +255,13 @@ def plot_thresh_obs(adata, thresholds, bins=40, save_to=None, verbose=True):
     else:
         axes.set_ylabel("cells")
         axes.hist(adata.obs[list(thresholds.keys())[0]], bins=bins)
-        if isinstance(list(thresholds.values())[0], np.ndarray):
-            [axes.axvline(_x, color="r") for _x in list(thresholds.values())[0]]
+        if isinstance(list(thresholds.values())[0]["thresh"], np.ndarray):
+            [
+                axes.axvline(_x, color="r")
+                for _x in list(thresholds.values())[0]["thresh"]
+            ]
         else:
-            axes.axvline(list(thresholds.values())[0], color="r")
+            axes.axvline(list(thresholds.values())[0]["thresh"], color="r")
         axes.set_title(list(thresholds.keys())[0])
     fig.tight_layout()
     if save_to is not None:
@@ -260,11 +275,9 @@ def plot_thresh_obs(adata, thresholds, bins=40, save_to=None, verbose=True):
 def filter_thresh_obs(
     adata,
     thresholds,
-    obs_cols=["arcsinh_n_genes_by_counts", "pct_counts_ambient"],
-    directions=["above", "below"],
+    obs_cols=["arcsinh_n_genes_by_counts"],
     inclusive=True,
     name="thresh_filter",
-    verbose=True,
 ):
     """
     filter cells by thresholding on metrics in adata.obs as output by auto_thresh_obs()
@@ -273,10 +286,8 @@ def filter_thresh_obs(
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
         thresholds (dict): output of auto_thresh_obs() function
         obs_cols (list of str): name of column(s) to threshold from adata.obs
-        directions (list of str): 'below' or 'above', indicating which direction to keep
         inclusive (bool): include cells at the thresholds?
         name (str): name of .obs col containing final labels
-        verbose (bool): print updates to the console
 
     Returns:
         updated adata with filter labels in adata.obs[name]
@@ -284,69 +295,79 @@ def filter_thresh_obs(
     # convert to lists before looping
     if isinstance(obs_cols, str):
         obs_cols = [obs_cols]
-    if isinstance(directions, str):
-        directions = [directions]
     # initialize .obs column as all "good" cells
     adata.obs[name] = 1
     # if any criteria are NOT met, label cells "bad"
     for i in range(len(obs_cols)):
-        if isinstance(thresholds[obs_cols[i]], np.ndarray):
+        if isinstance(thresholds[obs_cols[i]]["thresh"], np.ndarray):
 
             # set labels using second threshold for "above"
-            if directions[i] == "above":
+            if thresholds[obs_cols[i]]["direction"] == "above":
                 if inclusive:
                     adata.obs.loc[
                         (adata.obs[name] == 1)
-                        & (adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]][1]),
+                        & (
+                            adata.obs[obs_cols[i]]
+                            <= thresholds[obs_cols[i]]["thresh"][1]
+                        ),
                         name,
                     ] = 0
                 else:
                     adata.obs.loc[
                         (adata.obs[name] == 1)
-                        & (adata.obs[obs_cols[i]] < thresholds[obs_cols[i]][1]),
+                        & (
+                            adata.obs[obs_cols[i]]
+                            < thresholds[obs_cols[i]]["thresh"][1]
+                        ),
                         name,
                     ] = 0
             # set labels using first threshold for "below"
-            elif directions[i] == "below":
+            elif thresholds[obs_cols[i]]["direction"] == "below":
                 if inclusive:
                     adata.obs.loc[
                         (adata.obs[name] == 1)
-                        & (adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]][0]),
+                        & (
+                            adata.obs[obs_cols[i]]
+                            >= thresholds[obs_cols[i]]["thresh"][0]
+                        ),
                         name,
                     ] = 0
                 else:
                     adata.obs.loc[
                         (adata.obs[name] == 1)
-                        & (adata.obs[obs_cols[i]] > thresholds[obs_cols[i]][0]),
+                        & (
+                            adata.obs[obs_cols[i]]
+                            > thresholds[obs_cols[i]]["thresh"][0]
+                        ),
                         name,
                     ] = 0
 
         else:
             # if single threshold, just assign labels
-            if directions[i] == "above":
+            if thresholds[obs_cols[i]]["direction"] == "above":
                 if inclusive:
                     adata.obs.loc[
                         (adata.obs[name] == 1)
-                        & (adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]]),
+                        & (adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]]["thresh"]),
                         name,
                     ] = 0
                 else:
                     adata.obs.loc[
                         (adata.obs[name] == 1)
-                        & (adata.obs[obs_cols[i]] < thresholds[obs_cols[i]]),
+                        & (adata.obs[obs_cols[i]] < thresholds[obs_cols[i]]["thresh"]),
                         name,
                     ] = 0
-            elif directions[i] == "below":
+            elif thresholds[obs_cols[i]]["direction"] == "below":
                 if inclusive:
                     adata.obs.loc[
                         (adata.obs[name] == 1)
-                        & (adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]]),
+                        & (adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]]["thresh"]),
                         name,
                     ] = 0
                 else:
                     adata.obs.loc[
                         (adata.obs[name] == 1)
-                        & (adata.obs[obs_cols[i]] > thresholds[obs_cols[i]]),
+                        & (adata.obs[obs_cols[i]] > thresholds[obs_cols[i]]["thresh"]),
                         name,
                     ] = 0
 
@@ -359,14 +380,14 @@ def dropkick(
     mito_names="^mt-|^MT-",
     n_ambient=10,
     n_hvgs=2000,
-    metrics=["arcsinh_n_genes_by_counts", "pct_counts_ambient"],
-    thresh_methods=["multiotsu", "otsu"],
-    directions=["above", "below"],
+    metrics=["arcsinh_n_genes_by_counts"],
+    thresh_methods=["multiotsu"],
+    directions=["above"],
     alphas=[0.1],
-    max_iter=1000,
-    n_jobs=-1,
+    max_iter=2000,
+    n_jobs=2,
     seed=18,
-    verbose=False,
+    verbose=True,
 ):
     """
     generate logistic regression model of cell quality
@@ -414,31 +435,28 @@ def dropkick(
     )
 
     # 1) threshold chosen heuristics using automated methods
-    print("Thresholding on heuristics for training labels:\n\t{}".format(metrics))
+    if verbose:
+        print("Thresholding on heuristics for training labels:\n\t{}".format(metrics))
     # convert args to list
     if isinstance(metrics, str):
         metrics = [metrics]
     if isinstance(thresh_methods, str):
         thresh_methods = [thresh_methods]
-    adata_thresh = auto_thresh_obs(a, methods=thresh_methods, obs_cols=metrics)
-
-    # 2) create labels from combination of thresholds
-    # convert args to list
     if isinstance(directions, str):
         directions = [directions]
+    adata_thresh = auto_thresh_obs(
+        a, methods=thresh_methods, obs_cols=metrics, directions=directions
+    )
+
+    # 2) create labels from combination of thresholds
     a = filter_thresh_obs(
-        a,
-        adata_thresh,
-        obs_cols=metrics,
-        directions=directions,
-        inclusive=True,
-        name="train",
-        verbose=verbose,
+        a, adata_thresh, obs_cols=metrics, inclusive=True, name="train",
     )
 
     X = a[:, a.var.highly_variable].X.copy()  # X for testing
     y = a.obs["train"].copy(deep=True)  # final y is "train" labels from step 2
-    print("Training dropkick with alphas: {}".format(alphas))
+    if verbose:
+        print("Training dropkick with alphas: {}".format(alphas))
 
     if len(alphas) > 1:
         # 3.1) cross-validation to choose alpha and lambda values
@@ -507,7 +525,6 @@ def dropkick(
         "n_hvgs": n_hvgs,
         "metrics": metrics,
         "thresh_methods": thresh_methods,
-        "directions": directions,
         "alphas": alphas,
         "chosen_alpha": alpha_,
         "lambda_path": rc_.lambda_path_,
@@ -695,28 +712,58 @@ def score_plot(
     )
     # plot training thresholds on scatter
     if metrics[0] in adata.uns["dropkick_thresholds"]:
-        if isinstance(adata.uns["dropkick_thresholds"][metrics[0]], np.ndarray):
-            [
-                plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-                for _x in adata.uns["dropkick_thresholds"][metrics[0]]
-            ]
+        if isinstance(
+            adata.uns["dropkick_thresholds"][metrics[0]]["thresh"], np.ndarray
+        ):
+            # only plot threshold that matters if multiotsu was used
+            if adata.uns["dropkick_thresholds"][metrics[0]]["direction"] == "above":
+                plt.axvline(
+                    adata.uns["dropkick_thresholds"][metrics[0]]["thresh"][1],
+                    linestyle="-",
+                    color="k",
+                    linewidth=2.5,
+                    alpha=0.7,
+                )
+            elif adata.uns["dropkick_thresholds"][metrics[0]]["direction"] == "below":
+                plt.axvline(
+                    adata.uns["dropkick_thresholds"][metrics[0]]["thresh"][0],
+                    linestyle="-",
+                    color="k",
+                    linewidth=2.5,
+                    alpha=0.7,
+                )
         else:
             plt.axvline(
-                adata.uns["dropkick_thresholds"][metrics[0]],
+                adata.uns["dropkick_thresholds"][metrics[0]]["thresh"],
                 linestyle="-",
                 color="k",
                 linewidth=2.5,
                 alpha=0.7,
             )
     if metrics[1] in adata.uns["dropkick_thresholds"]:
-        if isinstance(adata.uns["dropkick_thresholds"][metrics[1]], np.ndarray):
-            [
-                plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-                for _x in adata.uns["dropkick_thresholds"][metrics[1]]
-            ]
+        if isinstance(
+            adata.uns["dropkick_thresholds"][metrics[1]]["thresh"], np.ndarray
+        ):
+            # only plot threshold that matters if multiotsu was used
+            if adata.uns["dropkick_thresholds"][metrics[1]]["direction"] == "above":
+                plt.axhline(
+                    adata.uns["dropkick_thresholds"][metrics[1]]["thresh"][1],
+                    linestyle="-",
+                    color="k",
+                    linewidth=2.5,
+                    alpha=0.7,
+                )
+            elif adata.uns["dropkick_thresholds"][metrics[1]]["direction"] == "below":
+                plt.axhline(
+                    adata.uns["dropkick_thresholds"][metrics[1]]["thresh"][0],
+                    linestyle="-",
+                    color="k",
+                    linewidth=2.5,
+                    alpha=0.7,
+                )
         else:
             plt.axhline(
-                adata.uns["dropkick_thresholds"][metrics[1]],
+                adata.uns["dropkick_thresholds"][metrics[1]]["thresh"],
                 linestyle="-",
                 color="k",
                 linewidth=2.5,
@@ -725,14 +772,29 @@ def score_plot(
     # change focus to x margin plot to continue threshold line
     if metrics[0] in adata.uns["dropkick_thresholds"]:
         plt.sca(g.ax_marg_x)
-        if isinstance(adata.uns["dropkick_thresholds"][metrics[0]], np.ndarray):
-            [
-                plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-                for _x in adata.uns["dropkick_thresholds"][metrics[0]]
-            ]
+        if isinstance(
+            adata.uns["dropkick_thresholds"][metrics[0]]["thresh"], np.ndarray
+        ):
+            # only plot threshold that matters if multiotsu was used
+            if adata.uns["dropkick_thresholds"][metrics[0]]["direction"] == "above":
+                plt.axvline(
+                    adata.uns["dropkick_thresholds"][metrics[0]]["thresh"][1],
+                    linestyle="-",
+                    color="k",
+                    linewidth=2.5,
+                    alpha=0.7,
+                )
+            elif adata.uns["dropkick_thresholds"][metrics[0]]["direction"] == "below":
+                plt.axvline(
+                    adata.uns["dropkick_thresholds"][metrics[0]]["thresh"][0],
+                    linestyle="-",
+                    color="k",
+                    linewidth=2.5,
+                    alpha=0.7,
+                )
         else:
             plt.axvline(
-                adata.uns["dropkick_thresholds"][metrics[0]],
+                adata.uns["dropkick_thresholds"][metrics[0]]["thresh"],
                 linestyle="-",
                 color="k",
                 linewidth=2.5,
@@ -741,14 +803,29 @@ def score_plot(
     # change focus to y margin plot to continue threshold line
     if metrics[1] in adata.uns["dropkick_thresholds"]:
         plt.sca(g.ax_marg_y)
-        if isinstance(adata.uns["dropkick_thresholds"][metrics[1]], np.ndarray):
-            [
-                plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
-                for _x in adata.uns["dropkick_thresholds"][metrics[1]]
-            ]
+        if isinstance(
+            adata.uns["dropkick_thresholds"][metrics[1]]["thresh"], np.ndarray
+        ):
+            # only plot threshold that matters if multiotsu was used
+            if adata.uns["dropkick_thresholds"][metrics[1]]["direction"] == "above":
+                plt.axhline(
+                    adata.uns["dropkick_thresholds"][metrics[1]]["thresh"][1],
+                    linestyle="-",
+                    color="k",
+                    linewidth=2.5,
+                    alpha=0.7,
+                )
+            elif adata.uns["dropkick_thresholds"][metrics[1]]["direction"] == "below":
+                plt.axhline(
+                    adata.uns["dropkick_thresholds"][metrics[1]]["thresh"][0],
+                    linestyle="-",
+                    color="k",
+                    linewidth=2.5,
+                    alpha=0.7,
+                )
         else:
             plt.axhline(
-                adata.uns["dropkick_thresholds"][metrics[1]],
+                adata.uns["dropkick_thresholds"][metrics[1]]["thresh"],
                 linestyle="-",
                 color="k",
                 linewidth=2.5,

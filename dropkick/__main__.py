@@ -29,9 +29,11 @@ def prepare(args):
     read counts into AnnData object and get directory and name for outputs
     """
     # read in counts data
-    print("\nReading in unfiltered counts from {}".format(args.counts), end="")
+    if args.verbose:
+        print("\nReading in unfiltered counts from {}".format(args.counts), end="")
     adata = sc.read(args.counts)
-    print(" - {} barcodes and {} genes".format(adata.shape[0], adata.shape[1]))
+    if args.verbose:
+        print(" - {} barcodes and {} genes".format(adata.shape[0], adata.shape[1]))
 
     # check that output directory exists, create it if needed.
     check_dir_exists(args.output_dir)
@@ -63,7 +65,12 @@ def run(args):
         verbose=args.verbose,
     )
     # save new labels in .h5ad
-    print("Writing updated counts to {}/{}_dropkick.h5ad".format(args.output_dir, name))
+    if args.verbose:
+        print(
+            "Writing updated counts to {}/{}_dropkick.h5ad".format(
+                args.output_dir, name
+            )
+        )
     adata.write(
         "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
     )
@@ -104,6 +111,8 @@ def qc(args):
         verbose=args.verbose,
     )
     # plot total counts distribution, gene dropout rates, and highest expressed genes
+    if args.verbose:
+        print("Saving QC summary plot to {}/{}_qc.png".format(args.output_dir, name))
     qc_summary(
         adata,
         save_to="{}/{}_qc.png".format(args.output_dir, name),
@@ -128,19 +137,13 @@ def main():
         help="Input (cell x gene) counts matrix as .h5ad or tab delimited text file",
     )
     run_parser.add_argument(
+        "-o",
         "--output-dir",
         required=False,
         type=str,
         help="Output directory. Output will be placed in [output-dir]/[name]_dropkick.h5ad. Default './'.",
         nargs="?",
         default=".",
-    )
-    run_parser.add_argument(
-        "-v",
-        "--verbose",
-        required=False,
-        help="Print processing updates to console.",
-        action="store_true",
     )
     run_parser.add_argument(
         "--min-genes",
@@ -161,9 +164,9 @@ def main():
         "--metrics",
         required=False,
         type=str,
-        help="Heuristics for thresholding.",
+        help="Heuristics for thresholding to build training set for model.",
         nargs="+",
-        default=["arcsinh_n_genes_by_counts", "pct_counts_ambient"],
+        default=["arcsinh_n_genes_by_counts"],
     )
     run_parser.add_argument(
         "--thresh-methods",
@@ -171,7 +174,7 @@ def main():
         type=str,
         help="Method used for automatic thresholding on each heuristic in '--metrics'.",
         nargs="+",
-        default=["multiotsu", "otsu"],
+        default=["multiotsu"],
     )
     run_parser.add_argument(
         "--directions",
@@ -179,7 +182,7 @@ def main():
         type=str,
         help="Direction of thresholding for each heuristic in '--metrics'.",
         nargs="+",
-        default=["above", "below"],
+        default=["above"],
     )
     run_parser.add_argument(
         "--n-hvgs",
@@ -189,6 +192,7 @@ def main():
         default=2000,
     )
     run_parser.add_argument(
+        "-a",
         "--alphas",
         required=False,
         type=float,
@@ -197,18 +201,20 @@ def main():
         default=[0.1],
     )
     run_parser.add_argument(
+        "-i",
         "--n-iter",
         required=False,
         type=int,
-        help="Maximum number of iterations for optimization. Default 1000.",
-        default=1000,
+        help="Maximum number of iterations for optimization. Default 2000.",
+        default=2000,
     )
     run_parser.add_argument(
+        "-j",
         "--n-jobs",
         required=False,
         type=int,
-        help="Maximum number of threads for cross validation. Default -1.",
-        default=-1,
+        help="Maximum number of threads for cross validation. Default 2.",
+        default=2,
     )
     run_parser.add_argument(
         "--seed",
@@ -216,6 +222,13 @@ def main():
         type=int,
         help="Random state for cross validation.",
         default=18,
+    )
+    qc_parser.add_argument(
+        "-q",
+        "--quietly",
+        required=False,
+        help="Run without printing processing updates to console.",
+        action="store_true",
     )
     run_parser.set_defaults(func=run)
 
@@ -234,13 +247,6 @@ def main():
         default=".",
     )
     qc_parser.add_argument(
-        "-v",
-        "--verbose",
-        required=False,
-        help="Print processing updates to console.",
-        action="store_true",
-    )
-    qc_parser.add_argument(
         "--min-genes",
         required=False,
         type=int,
@@ -254,7 +260,23 @@ def main():
         help="Number of top genes by dropout rate to use for ambient profile. Default 10.",
         default=10,
     )
+    qc_parser.add_argument(
+        "-q",
+        "--quietly",
+        required=False,
+        help="Run without printing processing updates to console.",
+        action="store_true",
+    )
     qc_parser.set_defaults(func=qc)
 
     args = parser.parse_args()
+
+    # if --quietly specified, reverse verbosity
+    if args.quietly:
+        args.verbose = False
+        del args.quietly
+    else:
+        args.verbose = True
+        del args.quietly
+
     args.func(args)
