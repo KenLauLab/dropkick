@@ -223,7 +223,7 @@ def main():
         help="Random state for cross validation.",
         default=18,
     )
-    qc_parser.add_argument(
+    run_parser.add_argument(
         "-q",
         "--quietly",
         required=False,
