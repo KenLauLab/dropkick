@@ -1,13 +1,16 @@
+# macOS
 .DS_Store
+# notebook checkpoints
 .ipynb_checkpoints/
-__pycache__/
-data.dat
-result.dat
-.RHistory
 .nb.html
+# compilation
+__pycache__/
 *.pyc
+*.c
+*.so
+# visual studio
 .vscode/
-.envrc
+# package build
 build/
 dist/
 dropkick.egg-info/
