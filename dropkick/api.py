@@ -456,7 +456,7 @@ def dropkick(
     X = a[:, a.var.highly_variable].X.copy()  # X for testing
     y = a.obs["train"].copy(deep=True)  # final y is "train" labels from step 2
     if verbose:
-        print("Training dropkick with alphas: {}".format(alphas))
+        print("Training dropkick with alphas:\n\t{}".format(alphas))
 
     if len(alphas) > 1:
         # 3.1) cross-validation to choose alpha and lambda values
@@ -487,7 +487,7 @@ def dropkick(
         rc_ = cv_scores["rc"][
             cv_scores["score"].index(max(cv_scores["score"]))
         ]  # choose classifier
-        print("Chosen lambda value: {}; Chosen alpha value: {}".format(lambda_, alpha_))
+        print("Chosen lambda value:\n\t{}\nChosen alpha value:\n\t{}".format(lambda_, alpha_))
     else:
         # 3.2) train model with single alpha value
         rc_ = LogitNet(
@@ -501,7 +501,7 @@ def dropkick(
             verbose=verbose,
         )
         rc_.fit(adata=a, y=y, n_hvgs=n_hvgs)
-        print("Chosen lambda value: {}".format(rc_.lambda_best_))
+        print("Chosen lambda value:\n\t{}".format(rc_.lambda_best_))
         lambda_, alpha_ = rc_.lambda_best_, alphas[0]
 
     # 4) use model to assign scores and labels to original adata
