@@ -1,5 +1,4 @@
-.. figure:: data/dropkick_logo.png
-   :alt: alt text
+|Dropkick Logo|
 
 Automated cell filtering for single-cell RNA sequencing data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,6 +50,8 @@ look at the total UMI distribution and ambient genes, saved as
 
 See |dropkick_tutorial.ipynb|_ for an
 interactive walkthrough of the ``dropkick`` pipeline and its outputs.
+
+.. |Dropkick Logo| image:: https://github.com/KenLauLab/dropkick/blob/master/data/dropkick_logo.png
 
 .. |Latest Version| image:: https://img.shields.io/pypi/v/dropkick
    :target: https://pypi.python.org/pypi/dropkick/
