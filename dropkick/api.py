@@ -835,7 +835,7 @@ def score_plot(
     axins1 = inset_axes(
         g.ax_joint,
         width="40%",  # width = 40% of parent_bbox width
-        height="3%",  # height : 3%
+        height="4%",  # height : 4%
         loc="upper right",
     )
     cbar = plt.colorbar(
@@ -847,6 +847,21 @@ def score_plot(
         ticks=[0.1, 0.5, 0.9],
     )
     cbar.solids.set_edgecolor("face")
+    # add histogram of scores on top of colorbar
+    axins2 = inset_axes(
+        g.ax_joint,
+        width="40%",  # width = 40% of parent_bbox width
+        height="4%",  # height : 4%
+        loc="upper right",
+    )
+    _ = axins2.hist(
+        adata.obs["dropkick_score"],
+        bins=40,
+        color="k",
+        alpha=0.7,
+        histtype="step",
+    )
+    axins2.axis("off")
     if save_to is not None:
         if verbose:
             print("Saving score plot to {}".format(save_to))
