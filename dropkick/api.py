@@ -278,6 +278,7 @@ def filter_thresh_obs(
     obs_cols=["arcsinh_n_genes_by_counts"],
     inclusive=True,
     name="thresh_filter",
+    verbose=True,
 ):
     """
     filter cells by thresholding on metrics in adata.obs as output by auto_thresh_obs()
@@ -288,6 +289,7 @@ def filter_thresh_obs(
         obs_cols (list of str): name of column(s) to threshold from adata.obs
         inclusive (bool): include cells at the thresholds?
         name (str): name of .obs col containing final labels
+        verbose (bool): print updates to console
 
     Returns:
         updated adata with filter labels in adata.obs[name]
@@ -484,7 +486,7 @@ def dropkick(
 
     # 2) create labels from combination of thresholds
     a = filter_thresh_obs(
-        a, adata_thresh, obs_cols=metrics, inclusive=True, name="train",
+        a, adata_thresh, obs_cols=metrics, inclusive=True, name="train", verbose=verbose
     )
 
     X = a[:, a.var.highly_variable].X.copy()  # X for testing
