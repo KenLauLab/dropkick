@@ -20,7 +20,7 @@ def dropout_plot(adata, show=False, ax=None):
     Parameters:
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
         show (bool): show plot or return object
-        ax (matplotlib.axes.Axes): axes object for plotting
+        ax (matplotlib.axes.Axes): axes object for plotting. if None, create new.
 
     Returns:
         plot of gene dropout rates
@@ -85,7 +85,7 @@ def counts_plot(adata, show=False, ax=None):
     Parameters:
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
         show (bool): show plot or return object
-        ax (matplotlib.axes.Axes): axes object for plotting
+        ax (matplotlib.axes.Axes): axes object for plotting. if None, create new.
 
     Returns:
         log-log plot of total counts and total genes per barcode,
@@ -145,19 +145,22 @@ def counts_plot(adata, show=False, ax=None):
         return ax
 
 
-def qc_summary(adata, save_to=None, verbose=True):
+def qc_summary(adata, fig=None, save_to=None, verbose=True):
     """
     plot summary of counts distribution and ambient genes
 
     Parameters:
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
+        fig (matplotlib.figure): figure object for plotting. if None, create new.
         save_to (str): path to .png file for saving figure; returns figure by default
         verbose (bool): print updates to console
 
     Returns:
-        counts_plot(), sc.pl.highest_expr_genes(), and dropout_plot() in single figure
+        fig (matplotlib.figure): counts_plot(), sc.pl.highest_expr_genes(), and
+            dropout_plot() in single figure
     """
-    fig = plt.figure(figsize=(10, 10))
+    if not fig:
+        fig = plt.figure(figsize=(10, 10))
     # arrange axes as subplots
     gs = gridspec.GridSpec(2, 2, figure=fig)
     ax1 = plt.subplot(gs[0, :])

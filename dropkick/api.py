@@ -221,7 +221,7 @@ def auto_thresh_obs(
     return thresholds
 
 
-def plot_thresh_obs(adata, thresholds, bins=40, save_to=None, verbose=True):
+def plot_thresh_obs(adata, thresholds, bins=40, axes=None, save_to=None, verbose=True):
     """
     plot automated thresholding on metrics in adata.obs as output by auto_thresh_obs()
 
@@ -229,15 +229,21 @@ def plot_thresh_obs(adata, thresholds, bins=40, save_to=None, verbose=True):
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
         thresholds (dict): output of auto_thresh_obs() function
         bins (int): number of bins for histogram
+        axes (matplotlib.axes.Axes): single ax or list of axes objects corresponding
+            to number of thresholds to plot. ignored if save_to is not None.
         save_to (str): path to .png file for saving figure; returns figure by default
         verbose (bool): print updates to console
 
     Returns:
         plot of distributions of obs_cols in thresholds dictionary with corresponding thresholds
     """
-    fig, axes = plt.subplots(
-        ncols=len(thresholds), nrows=1, figsize=(len(thresholds) * 4, 4), sharey=True
-    )
+    if save_to or not axes:
+        fig, axes = plt.subplots(
+            ncols=len(thresholds),
+            nrows=1,
+            figsize=(len(thresholds) * 4, 4),
+            sharey=True,
+        )
     # if multiple plots, loop through axes
     if len(thresholds) > 1:
         axes[0].set_ylabel("cells")
@@ -263,12 +269,12 @@ def plot_thresh_obs(adata, thresholds, bins=40, save_to=None, verbose=True):
         else:
             axes.axvline(list(thresholds.values())[0]["thresh"], color="r")
         axes.set_title(list(thresholds.keys())[0])
-    fig.tight_layout()
-    if save_to is not None:
+    plt.tight_layout()
+    if save_to:
         if verbose:
             print("Saving threshold plot to {}".format(save_to))
         fig.savefig(save_to)
-    else:
+    elif not axes:
         return fig
 
 
@@ -312,7 +318,8 @@ def filter_thresh_obs(
                     ].copy()
                 else:
                     adata = adata[
-                        adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]]["thresh"][0], :
+                        adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]]["thresh"][0],
+                        :,
                     ].copy()
                 if verbose:
                     print(
@@ -324,7 +331,8 @@ def filter_thresh_obs(
                 # use second threshold [1] as maximum for filtering
                 if inclusive:
                     adata = adata[
-                        adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]]["thresh"][1], :
+                        adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]]["thresh"][1],
+                        :,
                     ].copy()
                 else:
                     adata = adata[
@@ -523,7 +531,11 @@ def dropkick(
         rc_ = cv_scores["rc"][
             cv_scores["score"].index(max(cv_scores["score"]))
         ]  # choose classifier
-        print("Chosen lambda value:\n\t{}\nChosen alpha value:\n\t{}".format(lambda_, alpha_))
+        print(
+            "Chosen lambda value:\n\t{}\nChosen alpha value:\n\t{}".format(
+                lambda_, alpha_
+            )
+        )
     else:
         # 3.2) train model with single alpha value
         rc_ = LogitNet(
@@ -602,21 +614,24 @@ def coef_inventory(adata, n=10):
     )
 
 
-def coef_plot(adata, save_to=None, verbose=True):
+def coef_plot(adata, ax=None, save_to=None, verbose=True):
     """
     plot dropkick coefficient values and cross validation (CV) scores for tested values
     of lambda (lambda_path)
 
     Parameters:
         adata (anndata.AnnData): object generated from dropkick
-        save_to (str): path to .png file for saving figure; returns figure by default
+        ax (matplotlib.axes.Axes): axes object for plotting. if None, create new.
+            ignored if save_to is not None.
+        save_to (str): path to .png file for saving figure
         verbose (bool): print updates to console
 
     Returns:
         plot of CV scores (mean +/- SEM) and coefficient values (coef_path) versus
         log(lambda_path). includes indicator of chosen lambda value.
     """
-    fig, ax = plt.subplots(figsize=(9, 5))
+    if save_to or not ax:
+        fig, ax = plt.subplots(figsize=(9, 5))
     # plot coefficient values versus log(lambda) on left y-axis
     ax.set_title("Dropkick Coefficients")
     ax.set_xlabel("Log (lambda)")
@@ -694,12 +709,12 @@ def coef_plot(adata, save_to=None, verbose=True):
         ls="--",
     )
     plt.legend()
-    fig.tight_layout()
-    if save_to is not None:
+    plt.tight_layout()
+    if save_to:
         if verbose:
             print("Saving coefficient plot to {}".format(save_to))
         fig.savefig(save_to)
-    else:
+    elif not ax:
         return fig
 
 
@@ -720,8 +735,8 @@ def score_plot(
         verbose (bool): print updates to console
 
     Returns:
-        joint plot of dropkick_scores and metric distributions with
-            corresponding training thresholds
+        g (seaborn.jointgrid): joint plot of metric distributions colored by 
+            dropkick_score and containing corresponding training thresholds
     """
     # initialize joint plot object
     g = sns.jointplot(
@@ -751,23 +766,10 @@ def score_plot(
         if isinstance(
             adata.uns["dropkick_thresholds"][metrics[0]]["thresh"], np.ndarray
         ):
-            # only plot threshold that matters if multiotsu was used
-            if adata.uns["dropkick_thresholds"][metrics[0]]["direction"] == "above":
-                plt.axvline(
-                    adata.uns["dropkick_thresholds"][metrics[0]]["thresh"][1],
-                    linestyle="-",
-                    color="k",
-                    linewidth=2.5,
-                    alpha=0.7,
-                )
-            elif adata.uns["dropkick_thresholds"][metrics[0]]["direction"] == "below":
-                plt.axvline(
-                    adata.uns["dropkick_thresholds"][metrics[0]]["thresh"][0],
-                    linestyle="-",
-                    color="k",
-                    linewidth=2.5,
-                    alpha=0.7,
-                )
+            [
+                plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                for _x in adata.uns["dropkick_thresholds"][metrics[0]]["thresh"]
+            ]
         else:
             plt.axvline(
                 adata.uns["dropkick_thresholds"][metrics[0]]["thresh"],
@@ -780,23 +782,10 @@ def score_plot(
         if isinstance(
             adata.uns["dropkick_thresholds"][metrics[1]]["thresh"], np.ndarray
         ):
-            # only plot threshold that matters if multiotsu was used
-            if adata.uns["dropkick_thresholds"][metrics[1]]["direction"] == "above":
-                plt.axhline(
-                    adata.uns["dropkick_thresholds"][metrics[1]]["thresh"][1],
-                    linestyle="-",
-                    color="k",
-                    linewidth=2.5,
-                    alpha=0.7,
-                )
-            elif adata.uns["dropkick_thresholds"][metrics[1]]["direction"] == "below":
-                plt.axhline(
-                    adata.uns["dropkick_thresholds"][metrics[1]]["thresh"][0],
-                    linestyle="-",
-                    color="k",
-                    linewidth=2.5,
-                    alpha=0.7,
-                )
+            [
+                plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                for _x in adata.uns["dropkick_thresholds"][metrics[1]]["thresh"]
+            ]
         else:
             plt.axhline(
                 adata.uns["dropkick_thresholds"][metrics[1]]["thresh"],
@@ -811,23 +800,10 @@ def score_plot(
         if isinstance(
             adata.uns["dropkick_thresholds"][metrics[0]]["thresh"], np.ndarray
         ):
-            # only plot threshold that matters if multiotsu was used
-            if adata.uns["dropkick_thresholds"][metrics[0]]["direction"] == "above":
-                plt.axvline(
-                    adata.uns["dropkick_thresholds"][metrics[0]]["thresh"][1],
-                    linestyle="-",
-                    color="k",
-                    linewidth=2.5,
-                    alpha=0.7,
-                )
-            elif adata.uns["dropkick_thresholds"][metrics[0]]["direction"] == "below":
-                plt.axvline(
-                    adata.uns["dropkick_thresholds"][metrics[0]]["thresh"][0],
-                    linestyle="-",
-                    color="k",
-                    linewidth=2.5,
-                    alpha=0.7,
-                )
+            [
+                plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                for _x in adata.uns["dropkick_thresholds"][metrics[0]]["thresh"]
+            ]
         else:
             plt.axvline(
                 adata.uns["dropkick_thresholds"][metrics[0]]["thresh"],
@@ -842,23 +818,10 @@ def score_plot(
         if isinstance(
             adata.uns["dropkick_thresholds"][metrics[1]]["thresh"], np.ndarray
         ):
-            # only plot threshold that matters if multiotsu was used
-            if adata.uns["dropkick_thresholds"][metrics[1]]["direction"] == "above":
-                plt.axhline(
-                    adata.uns["dropkick_thresholds"][metrics[1]]["thresh"][1],
-                    linestyle="-",
-                    color="k",
-                    linewidth=2.5,
-                    alpha=0.7,
-                )
-            elif adata.uns["dropkick_thresholds"][metrics[1]]["direction"] == "below":
-                plt.axhline(
-                    adata.uns["dropkick_thresholds"][metrics[1]]["thresh"][0],
-                    linestyle="-",
-                    color="k",
-                    linewidth=2.5,
-                    alpha=0.7,
-                )
+            [
+                plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                for _x in adata.uns["dropkick_thresholds"][metrics[1]]["thresh"]
+            ]
         else:
             plt.axhline(
                 adata.uns["dropkick_thresholds"][metrics[1]]["thresh"],
@@ -891,7 +854,8 @@ def score_plot(
         loc="upper right",
     )
     _ = axins2.hist(
-        adata.obs["dropkick_score"],
+        # only include scores > 0 in hist so you can see distribution
+        adata.obs.loc[adata.obs["dropkick_score"] > 0.0, "dropkick_score"],
         bins=40,
         color="k",
         alpha=0.7,
