@@ -300,7 +300,41 @@ def filter_thresh_obs(
     # if any criteria are NOT met, label cells "bad"
     for i in range(len(obs_cols)):
         if isinstance(thresholds[obs_cols[i]]["thresh"], np.ndarray):
-
+            # if multiple thresholds, filter first
+            n_barcodes = adata.n_obs  # save for printing
+            if directions[i] == "above":
+                # use first threshold [0] as minimum for filtering
+                if inclusive:
+                    adata = adata[
+                        adata.obs[obs_cols[i]] > thresholds[obs_cols[i]]["thresh"][0], :
+                    ].copy()
+                else:
+                    adata = adata[
+                        adata.obs[obs_cols[i]] >= thresholds[obs_cols[i]]["thresh"][0], :
+                    ].copy()
+                if verbose:
+                    print(
+                        "Ignoring {} barcodes below first threshold on {}".format(
+                            n_barcodes - adata.shape[0], obs_cols[i]
+                        )
+                    )
+            elif directions[i] == "below":
+                # use second threshold [1] as maximum for filtering
+                if inclusive:
+                    adata = adata[
+                        adata.obs[obs_cols[i]] <= thresholds[obs_cols[i]]["thresh"][1], :
+                    ].copy()
+                else:
+                    adata = adata[
+                        adata.obs[obs_cols[i]] < thresholds[obs_cols[i]]["thresh"][1], :
+                    ].copy()
+                if verbose:
+                    print(
+                        "Ignoring {} barcodes above second threshold on {}".format(
+                            n_barcodes - adata.shape[0], obs_cols[i]
+                        )
+                    )
+            # then, set labels on remaining barcodes as usual
             # set labels using second threshold for "above"
             if thresholds[obs_cols[i]]["direction"] == "above":
                 if inclusive:
