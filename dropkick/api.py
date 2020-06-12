@@ -302,7 +302,7 @@ def filter_thresh_obs(
         if isinstance(thresholds[obs_cols[i]]["thresh"], np.ndarray):
             # if multiple thresholds, filter first
             n_barcodes = adata.n_obs  # save for printing
-            if directions[i] == "above":
+            if thresholds[obs_cols[i]]["direction"] == "above":
                 # use first threshold [0] as minimum for filtering
                 if inclusive:
                     adata = adata[
@@ -318,7 +318,7 @@ def filter_thresh_obs(
                             n_barcodes - adata.shape[0], obs_cols[i]
                         )
                     )
-            elif directions[i] == "below":
+            elif thresholds[obs_cols[i]]["direction"] == "below":
                 # use second threshold [1] as maximum for filtering
                 if inclusive:
                     adata = adata[
