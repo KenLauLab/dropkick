@@ -505,7 +505,7 @@ def dropkick(
             rc = LogitNet(
                 alpha=alpha,
                 n_lambda=100,
-                standardize=True,
+                standardize=False,
                 scoring="log_loss",
                 cut_point=1.0,
                 n_splits=5,
@@ -644,11 +644,11 @@ def coef_plot(adata, ax=None, save_to=None, verbose=True):
 
     # plot CV scores versus log(lambda) on right y-axis
     ax2 = ax.twinx()
-    ax2.set_ylabel("CV Deviance", color="b")
+    ax2.set_ylabel("Binomial Deviance", color="b")
     ax2.plot(
         np.log(adata.uns["dropkick_args"]["lambda_path"]),
         -2 * adata.uns["dropkick_args"]["cv_mean_score"],
-        label="CV Deviance Mean",
+        label="Mean Deviance",
         color="b",
     )
     ax2.fill_between(
@@ -659,7 +659,7 @@ def coef_plot(adata, ax=None, save_to=None, verbose=True):
         + 2 * adata.uns["dropkick_args"]["cv_standard_error"],
         color="b",
         alpha=0.2,
-        label="CV Deviance SEM",
+        label="Deviance SEM",
     )
     ax2.tick_params(axis="y", labelcolor="b")
     # plot vertical line at chosen lambda value and add to legend
