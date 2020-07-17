@@ -785,8 +785,6 @@ def score_plot(
                 adata.uns["dropkick_thresholds"][metrics[0]]["thresh"],
                 linestyle="--",
                 color="k",
-                # linewidth=2.5,
-                # alpha=0.7,
             )
     if metrics[1] in adata.uns["dropkick_thresholds"]:
         if isinstance(
@@ -801,8 +799,6 @@ def score_plot(
                 adata.uns["dropkick_thresholds"][metrics[1]]["thresh"],
                 linestyle="--",
                 color="k",
-                # linewidth=2.5,
-                # alpha=0.7,
             )
     # change focus to x margin plot to continue threshold line
     if metrics[0] in adata.uns["dropkick_thresholds"]:
@@ -819,8 +815,6 @@ def score_plot(
                 adata.uns["dropkick_thresholds"][metrics[0]]["thresh"],
                 linestyle="--",
                 color="k",
-                # linewidth=2.5,
-                # alpha=0.7,
             )
     # change focus to y margin plot to continue threshold line
     if metrics[1] in adata.uns["dropkick_thresholds"]:
@@ -837,8 +831,6 @@ def score_plot(
                 adata.uns["dropkick_thresholds"][metrics[1]]["thresh"],
                 linestyle="--",
                 color="k",
-                # linewidth=2.5,
-                # alpha=0.7,
             )
     # add colorbar inside scatter axes
     axins1 = inset_axes(
