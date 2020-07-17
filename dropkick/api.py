@@ -99,12 +99,8 @@ def recipe_dropkick(
         adata.var["pct_dropout_by_counts"] = np.array(
             (1 - (adata.X.astype(bool).sum(axis=0) / adata.n_obs)) * 100
         ).squeeze()
-        lowest_dropout = round(
-            adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).min(), 3
-        )
-        highest_dropout = round(
-            adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max(), 3
-        )
+        lowest_dropout = adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).min()
+        highest_dropout = adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max()
         adata.var["ambient"] = adata.var.pct_dropout_by_counts <= highest_dropout
         # reorder genes by dropout rate
         adata = adata[:, np.argsort(adata.var.pct_dropout_by_counts)].copy()
@@ -112,8 +108,8 @@ def recipe_dropkick(
             print(
                 "Top {} ambient genes have dropout rates between {} and {} percent:\n\t{}".format(
                     len(adata.var_names[adata.var.ambient]),
-                    lowest_dropout,
-                    highest_dropout,
+                    round(lowest_dropout, 3),
+                    round(highest_dropout, 3),
                     adata.var_names[adata.var.ambient].tolist(),
                 )
             )
@@ -641,12 +637,24 @@ def coef_plot(adata, ax=None, save_to=None, verbose=True):
         adata.uns["dropkick_args"]["coef_path"],
         alpha=0.5,
     )
-    # plot top three genes by coefficient value
+    # plot total model sparsity and top three genes by coefficient value
     # get range of values for positioning text
     val_range = (
         adata.uns["dropkick_args"]["coef_path"].max()
         - adata.uns["dropkick_args"]["coef_path"].min()
     )
+    # put model sparsity on top
+    n_zero = (adata.var.dropkick_coef == 0).sum()
+    n_coef = (-adata.var.dropkick_coef.isna()).sum()
+    sparsity = round((n_zero / n_coef) * 100, 3)
+    ax.text(
+        x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
+        y=adata.var.dropkick_coef.max() + (0.2 * val_range),
+        s="Sparsity: {}".format(sparsity),
+        fontsize=9,
+        color="k",
+    )
+    # add top three genes by coefficient value as annotation
     [
         ax.text(
             x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
@@ -662,7 +670,7 @@ def coef_plot(adata, ax=None, save_to=None, verbose=True):
         )
         for x in range(3)
     ]
-    # plot bottom three genes by coefficient value
+    # add bottom three genes by coefficient value as annotation
     [
         ax.text(
             x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),

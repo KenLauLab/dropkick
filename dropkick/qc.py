@@ -26,7 +26,7 @@ def dropout_plot(adata, show=False, ax=None):
         plot of gene dropout rates
     """
     if not ax:
-        fig, ax = plt.subplots(figsize=(4, 4))
+        _, ax = plt.subplots(figsize=(4, 4))
     ax.plot(
         adata.var.pct_dropout_by_counts[
             np.argsort(adata.var.pct_dropout_by_counts)
@@ -92,7 +92,7 @@ def counts_plot(adata, show=False, ax=None):
         with percent ambient and mitochondrial counts on secondary axis
     """
     if not ax:
-        fig, ax = plt.subplots(figsize=(9, 5))
+        _, ax = plt.subplots(figsize=(9, 5))
     # plot total counts left y-axis
     ax.set_xlabel("Ranked Barcodes")
     ax.set_ylabel("Total Counts/Genes")
@@ -169,6 +169,9 @@ def qc_summary(adata, fig=None, save_to=None, verbose=True):
     # add plots to axes
     counts_plot(adata, ax=ax1, show=False)
     sc.pl.highest_expr_genes(adata, ax=ax2, show=False, n_top=20)
+    # customize highest_expr_genes axis labels
+    ax2.set_xlabel("% Counts per Barcode")
+    ax2.set_ylabel("")
     dropout_plot(adata, ax=ax3, show=False)
     fig.tight_layout()
     # return
