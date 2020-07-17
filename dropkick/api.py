@@ -505,7 +505,7 @@ def dropkick(
             rc = LogitNet(
                 alpha=alpha,
                 n_lambda=100,
-                standardize=False,
+                standardize=True,
                 scoring="log_loss",
                 cut_point=1.0,
                 n_splits=5,
@@ -653,9 +653,9 @@ def coef_plot(adata, ax=None, save_to=None, verbose=True):
     )
     ax2.fill_between(
         np.log(adata.uns["dropkick_args"]["lambda_path"]),
-        y1=adata.uns["dropkick_args"]["cv_mean_score"]
+        y1=(-2 * adata.uns["dropkick_args"]["cv_mean_score"])
         - 2 * adata.uns["dropkick_args"]["cv_standard_error"],
-        y2=adata.uns["dropkick_args"]["cv_mean_score"]
+        y2=(-2 * adata.uns["dropkick_args"]["cv_mean_score"])
         + 2 * adata.uns["dropkick_args"]["cv_standard_error"],
         color="b",
         alpha=0.2,
