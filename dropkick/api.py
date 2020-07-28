@@ -505,7 +505,9 @@ def dropkick(
             rc = LogitNet(
                 alpha=alpha,
                 n_lambda=100,
-                cut_point=1,
+                standardize=False,
+                scoring="log_loss",
+                cut_point=1.0,
                 n_splits=5,
                 max_iter=max_iter,
                 n_jobs=n_jobs,
@@ -537,7 +539,9 @@ def dropkick(
         rc_ = LogitNet(
             alpha=alphas[0],
             n_lambda=100,
-            cut_point=1,
+            standardize=False,
+            scoring="log_loss",
+            cut_point=1.0,
             n_splits=5,
             max_iter=max_iter,
             n_jobs=n_jobs,
