@@ -265,7 +265,7 @@ class LogitNet(BaseEstimator):
                 n_splits=self.n_splits, shuffle=True, random_state=self.random_state
             )
 
-            cv_scores, hvgs = _score_lambda_path(
+            cv_scores, _hvgs = _score_lambda_path(
                 self,
                 adata,
                 y,

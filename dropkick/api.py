@@ -99,12 +99,8 @@ def recipe_dropkick(
         adata.var["pct_dropout_by_counts"] = np.array(
             (1 - (adata.X.astype(bool).sum(axis=0) / adata.n_obs)) * 100
         ).squeeze()
-        lowest_dropout = round(
-            adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).min(), 3
-        )
-        highest_dropout = round(
-            adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max(), 3
-        )
+        lowest_dropout = adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).min()
+        highest_dropout = adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max()
         adata.var["ambient"] = adata.var.pct_dropout_by_counts <= highest_dropout
         # reorder genes by dropout rate
         adata = adata[:, np.argsort(adata.var.pct_dropout_by_counts)].copy()
@@ -112,8 +108,8 @@ def recipe_dropkick(
             print(
                 "Top {} ambient genes have dropout rates between {} and {} percent:\n\t{}".format(
                     len(adata.var_names[adata.var.ambient]),
-                    lowest_dropout,
-                    highest_dropout,
+                    round(lowest_dropout, 3),
+                    round(highest_dropout, 3),
                     adata.var_names[adata.var.ambient].tolist(),
                 )
             )
@@ -509,7 +505,9 @@ def dropkick(
             rc = LogitNet(
                 alpha=alpha,
                 n_lambda=100,
-                cut_point=1,
+                standardize=False,
+                scoring="log_loss",
+                cut_point=1.0,
                 n_splits=5,
                 max_iter=max_iter,
                 n_jobs=n_jobs,
@@ -541,7 +539,9 @@ def dropkick(
         rc_ = LogitNet(
             alpha=alphas[0],
             n_lambda=100,
-            cut_point=1,
+            standardize=False,
+            scoring="log_loss",
+            cut_point=1.0,
             n_splits=5,
             max_iter=max_iter,
             n_jobs=n_jobs,
@@ -614,14 +614,14 @@ def coef_inventory(adata, n=10):
     )
 
 
-def coef_plot(adata, ax=None, save_to=None, verbose=True):
+def coef_plot(adata, axes=None, save_to=None, verbose=True):
     """
     plot dropkick coefficient values and cross validation (CV) scores for tested values
     of lambda (lambda_path)
 
     Parameters:
         adata (anndata.AnnData): object generated from dropkick
-        ax (matplotlib.axes.Axes): axes object for plotting. if None, create new.
+        axes (matplotlib.axes.Axes): axes (2) object for plotting. if None, create new.
             ignored if save_to is not None.
         save_to (str): path to .png file for saving figure
         verbose (bool): print updates to console
@@ -630,77 +630,92 @@ def coef_plot(adata, ax=None, save_to=None, verbose=True):
         plot of CV scores (mean +/- SEM) and coefficient values (coef_path) versus
         log(lambda_path). includes indicator of chosen lambda value.
     """
-    if save_to or not ax:
-        fig, ax = plt.subplots(figsize=(9, 5))
-    # plot coefficient values versus log(lambda) on left y-axis
-    ax.set_title("Dropkick Coefficients")
-    ax.set_xlabel("Log (lambda)")
-    ax.set_ylabel("Coefficient Value")
-    ax.plot(
+    if save_to or not axes:
+        fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(7, 7), sharex=True)
+    # plot coefficient values versus log(lambda) on top axis
+    axes[0].set_ylabel("Coefficient Value", fontsize=12)
+    axes[0].plot(
         np.log(adata.uns["dropkick_args"]["lambda_path"]),
         adata.uns["dropkick_args"]["coef_path"],
         alpha=0.5,
     )
-    # plot top three genes by coefficient value
+    axes[0].tick_params(axis="both", which="major", labelsize=12)
+    # plot vertical line at chosen lambda value and add to legend
+    axes[0].axvline(
+        np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
+        label=None,
+        color="k",
+        ls="--",
+    )
+    # plot total model sparsity and top three genes by coefficient value
     # get range of values for positioning text
     val_range = (
         adata.uns["dropkick_args"]["coef_path"].max()
         - adata.uns["dropkick_args"]["coef_path"].min()
     )
+    # put model sparsity on top
+    n_zero = (adata.var.dropkick_coef == 0).sum()
+    n_coef = (-adata.var.dropkick_coef.isna()).sum()
+    sparsity = round((n_zero / n_coef) * 100, 2)
+    axes[0].text(
+        x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
+        y=adata.var.dropkick_coef.max() + (0.24 * val_range),
+        s=" Sparsity: {} %".format(sparsity),
+        fontsize=12,
+        color="k",
+    )
+    # add top three genes by coefficient value as annotation
     [
-        ax.text(
+        axes[0].text(
             x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
             y=adata.var.dropkick_coef.max()
-            + (0.15 * val_range)
-            - (0.05 * val_range * x),
+            + (0.18 * val_range)
+            - (0.06 * val_range * x),
             s=" "
             + adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"]
             .nlargest(3)
             .index[x],
-            fontsize=9,
+            fontsize=12,
             color="g",
         )
         for x in range(3)
     ]
-    # plot bottom three genes by coefficient value
+    # add bottom three genes by coefficient value as annotation
     [
-        ax.text(
+        axes[0].text(
             x=np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
             y=adata.var.dropkick_coef.min()
-            - (0.20 * val_range)
-            + (0.05 * val_range * x),
+            - (0.24 * val_range)
+            + (0.06 * val_range * x),
             s=" "
             + adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"]
             .nsmallest(3)
             .index[x],
-            fontsize=9,
+            fontsize=12,
             color="r",
         )
         for x in range(3)
     ]
 
     # plot CV scores versus log(lambda) on right y-axis
-    ax2 = ax.twinx()
-    ax2.set_ylabel("CV Mean Score", color="b")
-    ax2.plot(
+    axes[1].plot(
         np.log(adata.uns["dropkick_args"]["lambda_path"]),
-        adata.uns["dropkick_args"]["cv_mean_score"],
-        label="CV Score Mean",
+        -2 * adata.uns["dropkick_args"]["cv_mean_score"],
+        label="Mean Deviance",
         color="b",
     )
-    ax2.fill_between(
+    axes[1].fill_between(
         np.log(adata.uns["dropkick_args"]["lambda_path"]),
-        y1=adata.uns["dropkick_args"]["cv_mean_score"]
-        - adata.uns["dropkick_args"]["cv_standard_error"],
-        y2=adata.uns["dropkick_args"]["cv_mean_score"]
-        + adata.uns["dropkick_args"]["cv_standard_error"],
+        y1=(-2 * adata.uns["dropkick_args"]["cv_mean_score"])
+        - 2 * adata.uns["dropkick_args"]["cv_standard_error"],
+        y2=(-2 * adata.uns["dropkick_args"]["cv_mean_score"])
+        + 2 * adata.uns["dropkick_args"]["cv_standard_error"],
         color="b",
         alpha=0.2,
-        label="CV Score SEM",
+        label="Deviance SEM",
     )
-    ax2.tick_params(axis="y", labelcolor="b")
     # plot vertical line at chosen lambda value and add to legend
-    plt.axvline(
+    axes[1].axvline(
         np.log(adata.uns["dropkick_args"]["chosen_lambda"]),
         label="Chosen lambda: {:.2e}".format(
             adata.uns["dropkick_args"]["chosen_lambda"][0]
@@ -708,13 +723,17 @@ def coef_plot(adata, ax=None, save_to=None, verbose=True):
         color="k",
         ls="--",
     )
-    plt.legend()
+    axes[1].set_xlabel("Log (lambda)", fontsize=12)
+    axes[1].set_ylabel("Binomial Deviance", fontsize=12)
+    axes[1].tick_params(axis="both", which="major", labelsize=12)
+    axes[1].legend(fontsize=12)
+
     plt.tight_layout()
     if save_to:
         if verbose:
             print("Saving coefficient plot to {}".format(save_to))
         fig.savefig(save_to)
-    elif not ax:
+    elif axes is None:
         return fig
 
 
@@ -742,6 +761,7 @@ def score_plot(
     g = sns.jointplot(
         x=adata.obs[metrics[0]],
         y=adata.obs[metrics[1]],
+        height=7,
         space=0,
         color="k",
         marginal_kws=dict(bins=40),
@@ -750,8 +770,8 @@ def score_plot(
     g.ax_joint.cla()
     plt.sca(g.ax_joint)
     # set axes labels
-    plt.xlabel(metrics[0])
-    plt.ylabel(metrics[1])
+    plt.xlabel(metrics[0], fontsize=12)
+    plt.ylabel(metrics[1], fontsize=12)
     # scatter plot, color by dropkick_score
     points = plt.scatter(
         x=adata.obs[metrics[0]],
@@ -761,38 +781,35 @@ def score_plot(
         cmap="coolwarm_r",
         alpha=0.5,
     )
+    plt.tick_params(axis="both", which="major", labelsize=12)
     # plot training thresholds on scatter
     if metrics[0] in adata.uns["dropkick_thresholds"]:
         if isinstance(
             adata.uns["dropkick_thresholds"][metrics[0]]["thresh"], np.ndarray
         ):
             [
-                plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                plt.axvline(_x, linestyle="--", color="k")
                 for _x in adata.uns["dropkick_thresholds"][metrics[0]]["thresh"]
             ]
         else:
             plt.axvline(
                 adata.uns["dropkick_thresholds"][metrics[0]]["thresh"],
-                linestyle="-",
+                linestyle="--",
                 color="k",
-                linewidth=2.5,
-                alpha=0.7,
             )
     if metrics[1] in adata.uns["dropkick_thresholds"]:
         if isinstance(
             adata.uns["dropkick_thresholds"][metrics[1]]["thresh"], np.ndarray
         ):
             [
-                plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                plt.axhline(_x, linestyle="--", color="k")
                 for _x in adata.uns["dropkick_thresholds"][metrics[1]]["thresh"]
             ]
         else:
             plt.axhline(
                 adata.uns["dropkick_thresholds"][metrics[1]]["thresh"],
-                linestyle="-",
+                linestyle="--",
                 color="k",
-                linewidth=2.5,
-                alpha=0.7,
             )
     # change focus to x margin plot to continue threshold line
     if metrics[0] in adata.uns["dropkick_thresholds"]:
@@ -801,16 +818,14 @@ def score_plot(
             adata.uns["dropkick_thresholds"][metrics[0]]["thresh"], np.ndarray
         ):
             [
-                plt.axvline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                plt.axvline(_x, linestyle="--", color="k")
                 for _x in adata.uns["dropkick_thresholds"][metrics[0]]["thresh"]
             ]
         else:
             plt.axvline(
                 adata.uns["dropkick_thresholds"][metrics[0]]["thresh"],
-                linestyle="-",
+                linestyle="--",
                 color="k",
-                linewidth=2.5,
-                alpha=0.7,
             )
     # change focus to y margin plot to continue threshold line
     if metrics[1] in adata.uns["dropkick_thresholds"]:
@@ -819,16 +834,14 @@ def score_plot(
             adata.uns["dropkick_thresholds"][metrics[1]]["thresh"], np.ndarray
         ):
             [
-                plt.axhline(_x, linestyle="-", color="k", linewidth=2.5, alpha=0.7)
+                plt.axhline(_x, linestyle="--", color="k")
                 for _x in adata.uns["dropkick_thresholds"][metrics[1]]["thresh"]
             ]
         else:
             plt.axhline(
                 adata.uns["dropkick_thresholds"][metrics[1]]["thresh"],
-                linestyle="-",
+                linestyle="--",
                 color="k",
-                linewidth=2.5,
-                alpha=0.7,
             )
     # add colorbar inside scatter axes
     axins1 = inset_axes(
@@ -845,6 +858,7 @@ def score_plot(
         orientation="horizontal",
         ticks=[0.1, 0.5, 0.9],
     )
+    cbar.ax.tick_params(labelsize=12)
     cbar.solids.set_edgecolor("face")
     # add histogram of scores on top of colorbar
     axins2 = inset_axes(

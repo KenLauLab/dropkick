@@ -111,8 +111,6 @@ def qc(args):
         verbose=args.verbose,
     )
     # plot total counts distribution, gene dropout rates, and highest expressed genes
-    if args.verbose:
-        print("Saving QC summary plot to {}/{}_qc.png".format(args.output_dir, name))
     qc_summary(
         adata,
         save_to="{}/{}_qc.png".format(args.output_dir, name),

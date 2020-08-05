@@ -26,7 +26,7 @@ def dropout_plot(adata, show=False, ax=None):
         plot of gene dropout rates
     """
     if not ax:
-        fig, ax = plt.subplots(figsize=(4, 4))
+        _, ax = plt.subplots(figsize=(4, 4))
     ax.plot(
         adata.var.pct_dropout_by_counts[
             np.argsort(adata.var.pct_dropout_by_counts)
@@ -40,7 +40,7 @@ def dropout_plot(adata, show=False, ax=None):
         y=(val_max - (0.03 * val_range)),
         s="Ambient Genes:",
         fontweight="bold",
-        fontsize=10,
+        fontsize=12,
     )
     if adata.var.ambient.sum() < 14:
         # plot all ambient gene names if they'll fit
@@ -49,7 +49,7 @@ def dropout_plot(adata, show=False, ax=None):
                 x=1,
                 y=((val_max - (0.10 * val_range)) - ((0.05 * val_range) * x)),
                 s=adata.var_names[adata.var.ambient][x],
-                fontsize=10,
+                fontsize=12,
             )
             for x in range(adata.var.ambient.sum())
         ]
@@ -60,7 +60,7 @@ def dropout_plot(adata, show=False, ax=None):
                 x=1,
                 y=((val_max - (0.10 * val_range)) - ((0.05 * val_range) * x)),
                 s=adata.var_names[adata.var.ambient][x],
-                fontsize=10,
+                fontsize=12,
             )
             for x in range(10)
         ]
@@ -69,11 +69,12 @@ def dropout_plot(adata, show=False, ax=None):
             y=(val_max - (0.60 * val_range)),
             s=". . .",
             fontweight="bold",
-            fontsize=10,
+            fontsize=12,
         )
     ax.set_xscale("log")
-    ax.set_ylabel("Dropout Rate (%)")
-    ax.set_xlabel("Ranked Genes")
+    ax.set_ylabel("Dropout Rate (%)", fontsize=12)
+    ax.set_xlabel("Ranked Genes", fontsize=12)
+    ax.tick_params(axis="both", which="major", labelsize=12)
     if not show:
         return ax
 
@@ -92,10 +93,10 @@ def counts_plot(adata, show=False, ax=None):
         with percent ambient and mitochondrial counts on secondary axis
     """
     if not ax:
-        fig, ax = plt.subplots(figsize=(9, 5))
+        _, ax = plt.subplots(figsize=(9, 5))
     # plot total counts left y-axis
-    ax.set_xlabel("Ranked Barcodes")
-    ax.set_ylabel("Total Counts/Genes")
+    ax.set_xlabel("Ranked Barcodes", fontsize=12)
+    ax.set_ylabel("Total Counts/Genes", fontsize=12)
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.plot(
@@ -114,11 +115,12 @@ def counts_plot(adata, show=False, ax=None):
         edgecolors="none",
         label="Genes",
     )
-    ax.legend(loc="lower left")
+    ax.tick_params(axis="both", which="major", labelsize=12)
+    ax.legend(loc="lower left", fontsize=12)
 
     # plot percent ambient counts on right y-axis
     ax2 = ax.twinx()
-    ax2.set_ylabel("% Counts")
+    ax2.set_ylabel("% Counts", fontsize=12)
     ax2.scatter(
         list(range(adata.n_obs)),
         adata.obs.pct_counts_ambient[np.argsort(adata.obs.total_counts)[::-1]].values,
@@ -136,8 +138,8 @@ def counts_plot(adata, show=False, ax=None):
         label="% Mito",
     )
     ax2.set_xscale("log")
-    ax2.tick_params(axis="y")
-    ax2.legend(loc="upper right")
+    ax2.tick_params(axis="y", which="major", labelsize=12)
+    ax2.legend(loc="upper right", fontsize=12)
 
     ax.set_zorder(ax2.get_zorder() + 1)  # put ax in front of ax2
     ax.patch.set_visible(False)  # hide the 'canvas'
@@ -169,6 +171,10 @@ def qc_summary(adata, fig=None, save_to=None, verbose=True):
     # add plots to axes
     counts_plot(adata, ax=ax1, show=False)
     sc.pl.highest_expr_genes(adata, ax=ax2, show=False, n_top=20)
+    # customize highest_expr_genes axis labels
+    ax2.set_xlabel("% Counts per Barcode", fontsize=12)
+    ax2.set_ylabel("")
+    ax2.tick_params(axis="both", which="major", labelsize=12)
     dropout_plot(adata, ax=ax3, show=False)
     fig.tight_layout()
     # return
