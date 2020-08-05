@@ -239,6 +239,7 @@ def main():
         help="Input (cell x gene) counts matrix as .h5ad or tab delimited text file",
     )
     qc_parser.add_argument(
+        "-o",
         "--output-dir",
         required=False,
         type=str,
