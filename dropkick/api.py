@@ -558,6 +558,9 @@ def dropkick(
     adata.obs.dropkick_score.fillna(0, inplace=True)  # fill ignored cells with zeros
     adata.obs.loc[a.obs_names, "dropkick_label"] = rc_.predict(X)
     adata.obs.dropkick_label.fillna(0, inplace=True)  # fill ignored cells with zeros
+    adata.obs.dropkick_label = adata.obs.dropkick_label.astype(bool).astype(
+        "category"
+    )  # convert to categorical dtype
     for metric in metrics:
         adata.obs.loc[a.obs_names, metric] = a.obs[metric]
         adata.obs[metric].fillna(0, inplace=True)  # fill ignored cells with zeros
