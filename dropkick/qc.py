@@ -79,24 +79,30 @@ def dropout_plot(adata, show=False, ax=None):
         return ax
 
 
-def counts_plot(adata, show=False, ax=None):
+def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None):
     """
     plot total counts for all barcodes
 
     Parameters:
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
         show (bool): show plot or return object
+        genes (bool): show n_genes detected as points
+        ambient (bool): show pct_counts_ambient as points
+        mito (bool): show pct_counts_mito as points
         ax (matplotlib.axes.Axes): axes object for plotting. if None, create new.
 
     Returns:
-        log-log plot of total counts and total genes per barcode,
-        with percent ambient and mitochondrial counts on secondary axis
+        log-log plot of total counts and total genes per ranked barcode,
+        with percent ambient and mitochondrial counts on secondary axis if desired
     """
     if not ax:
         _, ax = plt.subplots(figsize=(9, 5))
     # plot total counts left y-axis
     ax.set_xlabel("Ranked Barcodes", fontsize=12)
-    ax.set_ylabel("Total Counts/Genes", fontsize=12)
+    if genes:
+        ax.set_ylabel("Total Counts/Genes", fontsize=12)
+    else:
+        ax.set_ylabel("Total Counts", fontsize=12)
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.plot(
@@ -106,53 +112,67 @@ def counts_plot(adata, show=False, ax=None):
         alpha=0.8,
         label="Counts",
     )
-    ax.scatter(
-        list(range(adata.n_obs)),
-        adata.obs.n_genes_by_counts[np.argsort(adata.obs.total_counts)[::-1]].values,
-        s=18,
-        color="r",
-        alpha=0.3,
-        edgecolors="none",
-        label="Genes",
-    )
+    if genes:
+        ax.scatter(
+            list(range(adata.n_obs)),
+            adata.obs.n_genes_by_counts[
+                np.argsort(adata.obs.total_counts)[::-1]
+            ].values,
+            s=18,
+            color="r",
+            alpha=0.3,
+            edgecolors="none",
+            label="Genes",
+        )
     ax.tick_params(axis="both", which="major", labelsize=12)
-    ax.legend(loc="lower left", fontsize=12)
+    if genes:
+        ax.legend(loc="lower left", fontsize=12)
+    else:
+        ax.legend_.remove()
 
-    # plot percent ambient counts on right y-axis
-    ax2 = ax.twinx()
-    ax2.set_ylabel("% Counts", fontsize=12)
-    ax2.scatter(
-        list(range(adata.n_obs)),
-        adata.obs.pct_counts_ambient[np.argsort(adata.obs.total_counts)[::-1]].values,
-        s=18,
-        alpha=0.3,
-        edgecolors="none",
-        label="% Ambient",
-    )
-    ax2.scatter(
-        list(range(adata.n_obs)),
-        adata.obs.pct_counts_mito[np.argsort(adata.obs.total_counts)[::-1]].values,
-        s=18,
-        alpha=0.3,
-        edgecolors="none",
-        label="% Mito",
-    )
-    ax2.set_xscale("log")
-    ax2.tick_params(axis="y", which="major", labelsize=12)
-    ax2.legend(loc="upper right", fontsize=12)
+    if ambient or mito:
+        # plot percent ambient counts on right y-axis
+        ax2 = ax.twinx()
+        ax2.set_ylabel("% Counts", fontsize=12)
+        if ambient:
+            ax2.scatter(
+                list(range(adata.n_obs)),
+                adata.obs.pct_counts_ambient[
+                    np.argsort(adata.obs.total_counts)[::-1]
+                ].values,
+                s=18,
+                alpha=0.3,
+                edgecolors="none",
+                label="% Ambient",
+            )
+        if mito:
+            ax2.scatter(
+                list(range(adata.n_obs)),
+                adata.obs.pct_counts_mito[
+                    np.argsort(adata.obs.total_counts)[::-1]
+                ].values,
+                s=18,
+                alpha=0.3,
+                edgecolors="none",
+                label="% Mito",
+            )
+        ax2.set_xscale("log")
+        ax2.tick_params(axis="y", which="major", labelsize=12)
+        ax2.legend(loc="upper right", fontsize=12)
 
-    ax.set_zorder(ax2.get_zorder() + 1)  # put ax in front of ax2
+        ax.set_zorder(ax2.get_zorder() + 1)  # put ax in front of ax2
     ax.patch.set_visible(False)  # hide the 'canvas'
     if not show:
         return ax
 
 
-def qc_summary(adata, fig=None, save_to=None, verbose=True):
+def qc_summary(adata, mito=True, fig=None, save_to=None, verbose=True):
     """
     plot summary of counts distribution and ambient genes
 
     Parameters:
         adata (anndata.AnnData): object containing unfiltered scRNA-seq data
+        mito (bool): show pct_counts_mito as points
         fig (matplotlib.figure): figure object for plotting. if None, create new.
         save_to (str): path to .png file for saving figure; returns figure by default
         verbose (bool): print updates to console
@@ -169,7 +189,7 @@ def qc_summary(adata, fig=None, save_to=None, verbose=True):
     ax2 = plt.subplot(gs[1, 0])
     ax3 = plt.subplot(gs[1, 1])
     # add plots to axes
-    counts_plot(adata, ax=ax1, show=False)
+    counts_plot(adata, ax=ax1, show=False, mito=mito)
     sc.pl.highest_expr_genes(adata, ax=ax2, show=False, n_top=20)
     # customize highest_expr_genes axis labels
     ax2.set_xlabel("% Counts per Barcode", fontsize=12)
