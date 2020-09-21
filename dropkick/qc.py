@@ -188,10 +188,10 @@ def qc_summary(
             dropout_plot() in single figure
     """
     if not fig:
-        fig = plt.figure(figsize=(7, 7))
+        fig = plt.figure(figsize=(10, 7))
     # arrange axes as subplots
-    gs = gridspec.GridSpec(3, 1, figure=fig)
-    ax1 = plt.subplot(gs[0:1])
+    gs = gridspec.GridSpec(1, 3, figure=fig)
+    ax1 = plt.subplot(gs[0:2])
     ax2 = plt.subplot(gs[2])
     # add plots to axes
     counts_plot(adata, ax=ax1, show=False, genes=genes, ambient=ambient, mito=mito)
