@@ -189,8 +189,8 @@ def qc_summary(adata, mito=True, fig=None, save_to=None, verbose=True):
         fig = plt.figure(figsize=(5, 10))
     # arrange axes as subplots
     gs = gridspec.GridSpec(1, 3, figure=fig)
-    ax1 = plt.subplot(gs[0:3])
-    ax2 = plt.subplot(gs[3])
+    ax1 = plt.subplot(gs[0:2])
+    ax2 = plt.subplot(gs[2])
     # add plots to axes
     counts_plot(adata, ax=ax1, show=False, mito=mito)
     dropout_plot(adata, ax=ax2, show=False)
