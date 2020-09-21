@@ -196,7 +196,7 @@ def qc_summary(
     # add plots to axes
     counts_plot(adata, ax=ax1, show=False, genes=genes, ambient=ambient, mito=mito)
     dropout_plot(adata, ax=ax2, show=False)
-    fig.tight_layout(wpad=1.2)
+    gs.tight_layout(wpad=1.2)
     # return
     if save_to is not None:
         if verbose:
