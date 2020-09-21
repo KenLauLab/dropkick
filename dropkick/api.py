@@ -270,7 +270,7 @@ def plot_thresh_obs(adata, thresholds, bins=40, axes=None, save_to=None, verbose
     if save_to:
         if verbose:
             print("Saving threshold plot to {}".format(save_to))
-        fig.savefig(save_to)
+        fig.savefig(save_to, dpi=200)
     elif not axes:
         return fig
 
@@ -741,7 +741,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
     if save_to:
         if verbose:
             print("Saving coefficient plot to {}".format(save_to))
-        fig.savefig(save_to)
+        fig.savefig(save_to, dpi=200)
     elif axes is None:
         return fig
 
@@ -892,6 +892,6 @@ def score_plot(
     if save_to is not None:
         if verbose:
             print("Saving score plot to {}".format(save_to))
-        g.savefig(save_to)
+        g.savefig(save_to, dpi=200)
     else:
         return g

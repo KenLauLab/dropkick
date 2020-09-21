@@ -202,6 +202,6 @@ def qc_summary(
     if save_to is not None:
         if verbose:
             print("Saving QC plot to {}".format(save_to))
-        fig.savefig(save_to)
+        fig.savefig(save_to, dpi=200)
     else:
         return fig
