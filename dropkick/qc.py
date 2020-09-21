@@ -190,12 +190,12 @@ def qc_summary(adata, mito=True, fig=None, save_to=None, verbose=True):
     ax3 = plt.subplot(gs[1, 1])
     # add plots to axes
     counts_plot(adata, ax=ax1, show=False, mito=mito)
-    sc.pl.highest_expr_genes(adata, ax=ax2, show=False, n_top=20)
+    dropout_plot(adata, ax=ax2, show=False)
+    sc.pl.highest_expr_genes(adata, ax=ax3, n_top=20, log=True, show=False)
     # customize highest_expr_genes axis labels
-    ax2.set_xlabel("% Counts per Barcode", fontsize=12)
-    ax2.set_ylabel("")
-    ax2.tick_params(axis="both", which="major", labelsize=12)
-    dropout_plot(adata, ax=ax3, show=False)
+    ax3.set_xlabel("% Counts per Barcode", fontsize=12)
+    ax3.set_ylabel("")
+    ax3.tick_params(axis="both", which="major", labelsize=12)
     fig.tight_layout()
     # return
     if save_to is not None:
