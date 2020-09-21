@@ -30,7 +30,9 @@ def dropout_plot(adata, show=False, ax=None):
     ax.plot(
         adata.var.pct_dropout_by_counts[
             np.argsort(adata.var.pct_dropout_by_counts)
-        ].values
+        ].values,
+        color="k",
+        linewidth=3.5,
     )
     # get range of values for positioning text
     val_max = adata.var.pct_dropout_by_counts.max()
@@ -108,7 +110,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
     ax.plot(
         adata.obs.total_counts[np.argsort(adata.obs.total_counts)[::-1]].values,
         linewidth=3.5,
-        color="g",
+        color="k",
         alpha=0.8,
         label="Counts",
     )
@@ -119,7 +121,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
                 np.argsort(adata.obs.total_counts)[::-1]
             ].values,
             s=18,
-            color="r",
+            color="g",
             alpha=0.3,
             edgecolors="none",
             label="Genes",
@@ -182,20 +184,14 @@ def qc_summary(adata, mito=True, fig=None, save_to=None, verbose=True):
             dropout_plot() in single figure
     """
     if not fig:
-        fig = plt.figure(figsize=(10, 10))
+        fig = plt.figure(figsize=(5, 10))
     # arrange axes as subplots
-    gs = gridspec.GridSpec(2, 2, figure=fig)
-    ax1 = plt.subplot(gs[0, :])
-    ax2 = plt.subplot(gs[1, 0])
-    ax3 = plt.subplot(gs[1, 1])
+    gs = gridspec.GridSpec(1, 3, figure=fig)
+    ax1 = plt.subplot(gs[0, 0:3])
+    ax2 = plt.subplot(gs[0, 3])
     # add plots to axes
     counts_plot(adata, ax=ax1, show=False, mito=mito)
     dropout_plot(adata, ax=ax2, show=False)
-    sc.pl.highest_expr_genes(adata, ax=ax3, n_top=20, log=True, show=False)
-    # customize highest_expr_genes axis labels
-    ax3.set_xlabel("% Counts per Barcode", fontsize=12)
-    ax3.set_ylabel("")
-    ax3.tick_params(axis="both", which="major", labelsize=12)
     fig.tight_layout()
     # return
     if save_to is not None:
