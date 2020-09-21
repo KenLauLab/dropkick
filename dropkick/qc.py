@@ -121,7 +121,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
                 np.argsort(adata.obs.total_counts)[::-1]
             ].values,
             s=18,
-            color="g",
+            color="o",
             alpha=0.3,
             edgecolors="none",
             label="Genes",
@@ -170,7 +170,9 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
         return ax
 
 
-def qc_summary(adata, mito=True, fig=None, save_to=None, verbose=True):
+def qc_summary(
+    adata, mito=True, ambient=True, genes=True, fig=None, save_to=None, verbose=True
+):
     """
     plot summary of counts distribution and ambient genes
 
@@ -186,13 +188,13 @@ def qc_summary(adata, mito=True, fig=None, save_to=None, verbose=True):
             dropout_plot() in single figure
     """
     if not fig:
-        fig = plt.figure(figsize=(5, 10))
+        fig = plt.figure(figsize=(10, 5))
     # arrange axes as subplots
     gs = gridspec.GridSpec(1, 3, figure=fig)
     ax1 = plt.subplot(gs[0:2])
     ax2 = plt.subplot(gs[2])
     # add plots to axes
-    counts_plot(adata, ax=ax1, show=False, mito=mito)
+    counts_plot(adata, ax=ax1, show=False, genes=genes, ambient=ambient, mito=mito)
     dropout_plot(adata, ax=ax2, show=False)
     fig.tight_layout()
     # return
