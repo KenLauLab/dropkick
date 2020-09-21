@@ -121,7 +121,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
                 np.argsort(adata.obs.total_counts)[::-1]
             ].values,
             s=18,
-            color="o",
+            color="g",
             alpha=0.3,
             edgecolors="none",
             label="Genes",
