@@ -8,7 +8,7 @@ import argparse
 import numpy as np
 import scanpy as sc
 import matplotlib.pyplot as plt
-from matplotlib import gridspec
+from matplotlib import cm, gridspec
 
 from .api import recipe_dropkick
 
@@ -32,7 +32,7 @@ def dropout_plot(adata, show=False, ax=None):
             np.argsort(adata.var.pct_dropout_by_counts)
         ].values,
         color="k",
-        linewidth=3.5,
+        linewidth=3,
     )
     # get range of values for positioning text
     val_max = adata.var.pct_dropout_by_counts.max()
@@ -97,6 +97,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
         log-log plot of total counts and total genes per ranked barcode,
         with percent ambient and mitochondrial counts on secondary axis if desired
     """
+    cmap = cm.get_cmap("coolwarm")
     if not ax:
         _, ax = plt.subplots(figsize=(7, 5))
     # plot total counts left y-axis
@@ -109,7 +110,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
     ax.set_yscale("log")
     ax.plot(
         adata.obs.total_counts[np.argsort(adata.obs.total_counts)[::-1]].values,
-        linewidth=3.5,
+        linewidth=3,
         color="k",
         alpha=0.8,
         label="Counts",
@@ -143,7 +144,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
                     np.argsort(adata.obs.total_counts)[::-1]
                 ].values,
                 s=18,
-                color="b",
+                color=cmap(0.0),
                 alpha=0.3,
                 edgecolors="none",
                 label="% Ambient",
@@ -155,7 +156,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
                     np.argsort(adata.obs.total_counts)[::-1]
                 ].values,
                 s=18,
-                color="r",
+                color=cmap(1.0),
                 alpha=0.3,
                 edgecolors="none",
                 label="% Mito",
@@ -196,7 +197,7 @@ def qc_summary(
     # add plots to axes
     counts_plot(adata, ax=ax1, show=False, genes=genes, ambient=ambient, mito=mito)
     dropout_plot(adata, ax=ax2, show=False)
-    gs.tight_layout(figure=fig, w_pad=1.5)
+    gs.tight_layout(figure=fig, w_pad=1.8)
     # return
     if save_to is not None:
         if verbose:
