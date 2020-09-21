@@ -98,7 +98,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
         with percent ambient and mitochondrial counts on secondary axis if desired
     """
     if not ax:
-        _, ax = plt.subplots(figsize=(9, 5))
+        _, ax = plt.subplots(figsize=(7, 5))
     # plot total counts left y-axis
     ax.set_xlabel("Ranked Barcodes", fontsize=12)
     if genes:
@@ -121,7 +121,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
                 np.argsort(adata.obs.total_counts)[::-1]
             ].values,
             s=18,
-            color="g",
+            color="y",
             alpha=0.3,
             edgecolors="none",
             label="Genes",
@@ -188,10 +188,10 @@ def qc_summary(
             dropout_plot() in single figure
     """
     if not fig:
-        fig = plt.figure(figsize=(10, 5))
+        fig = plt.figure(figsize=(7, 7))
     # arrange axes as subplots
-    gs = gridspec.GridSpec(1, 3, figure=fig)
-    ax1 = plt.subplot(gs[0:2])
+    gs = gridspec.GridSpec(3, 1, figure=fig)
+    ax1 = plt.subplot(gs[0:1])
     ax2 = plt.subplot(gs[2])
     # add plots to axes
     counts_plot(adata, ax=ax1, show=False, genes=genes, ambient=ambient, mito=mito)
