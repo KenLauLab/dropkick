@@ -32,7 +32,7 @@ def dropout_plot(adata, show=False, ax=None):
             np.argsort(adata.var.pct_dropout_by_counts)
         ].values,
         color="k",
-        linewidth=3,
+        linewidth=2,
     )
     # get range of values for positioning text
     val_max = adata.var.pct_dropout_by_counts.max()
@@ -110,7 +110,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
     ax.set_yscale("log")
     ax.plot(
         adata.obs.total_counts[np.argsort(adata.obs.total_counts)[::-1]].values,
-        linewidth=3,
+        linewidth=2,
         color="k",
         alpha=0.8,
         label="Counts",

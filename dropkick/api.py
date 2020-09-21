@@ -643,7 +643,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
         np.log(adata.uns["dropkick_args"]["lambda_path"]),
         adata.uns["dropkick_args"]["coef_path"],
         alpha=0.5,
-        linewidth=1.5,
+        linewidth=2,
     )
     axes[0].tick_params(axis="both", which="major", labelsize=12)
     # plot vertical line at chosen lambda value and add to legend
@@ -652,7 +652,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
         label=None,
         color="k",
         ls="--",
-        linewidth=3,
+        linewidth=2,
     )
     # plot total model sparsity and top three genes by coefficient value
     # get range of values for positioning text
@@ -699,7 +699,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
             .nsmallest(3)
             .index[x],
             fontsize=12,
-            color="r",
+            color=cmap(1.0),
         )
         for x in range(3)
     ]
@@ -710,7 +710,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
         -2 * adata.uns["dropkick_args"]["cv_mean_score"],
         label="Mean Deviance",
         color=cmap(0.0),
-        linewidth=3,
+        linewidth=2,
     )
     axes[1].fill_between(
         np.log(adata.uns["dropkick_args"]["lambda_path"]),
@@ -730,7 +730,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
         ),
         color="k",
         ls="--",
-        linewidth=3,
+        linewidth=2,
     )
     axes[1].set_xlabel("Log (lambda)", fontsize=12)
     axes[1].set_ylabel("Binomial Deviance", fontsize=12)
@@ -797,7 +797,7 @@ def score_plot(
             adata.uns["dropkick_thresholds"][metrics[0]]["thresh"], np.ndarray
         ):
             [
-                plt.axvline(_x, linestyle="--", color="k", linewidth=3)
+                plt.axvline(_x, linestyle="--", color="k", linewidth=2)
                 for _x in adata.uns["dropkick_thresholds"][metrics[0]]["thresh"]
             ]
         else:
@@ -805,14 +805,14 @@ def score_plot(
                 adata.uns["dropkick_thresholds"][metrics[0]]["thresh"],
                 linestyle="--",
                 color="k",
-                linewidth=3,
+                linewidth=2,
             )
     if metrics[1] in adata.uns["dropkick_thresholds"]:
         if isinstance(
             adata.uns["dropkick_thresholds"][metrics[1]]["thresh"], np.ndarray
         ):
             [
-                plt.axhline(_x, linestyle="--", color="k", linewidth=3)
+                plt.axhline(_x, linestyle="--", color="k", linewidth=2)
                 for _x in adata.uns["dropkick_thresholds"][metrics[1]]["thresh"]
             ]
         else:
@@ -820,7 +820,7 @@ def score_plot(
                 adata.uns["dropkick_thresholds"][metrics[1]]["thresh"],
                 linestyle="--",
                 color="k",
-                linewidth=3,
+                linewidth=2,
             )
     # change focus to x margin plot to continue threshold line
     if metrics[0] in adata.uns["dropkick_thresholds"]:
@@ -829,7 +829,7 @@ def score_plot(
             adata.uns["dropkick_thresholds"][metrics[0]]["thresh"], np.ndarray
         ):
             [
-                plt.axvline(_x, linestyle="--", color="k", linewidth=3)
+                plt.axvline(_x, linestyle="--", color="k", linewidth=2)
                 for _x in adata.uns["dropkick_thresholds"][metrics[0]]["thresh"]
             ]
         else:
@@ -837,7 +837,7 @@ def score_plot(
                 adata.uns["dropkick_thresholds"][metrics[0]]["thresh"],
                 linestyle="--",
                 color="k",
-                linewidth=3,
+                linewidth=2,
             )
     # change focus to y margin plot to continue threshold line
     if metrics[1] in adata.uns["dropkick_thresholds"]:
@@ -846,7 +846,7 @@ def score_plot(
             adata.uns["dropkick_thresholds"][metrics[1]]["thresh"], np.ndarray
         ):
             [
-                plt.axhline(_x, linestyle="--", color="k", linewidth=3)
+                plt.axhline(_x, linestyle="--", color="k", linewidth=2)
                 for _x in adata.uns["dropkick_thresholds"][metrics[1]]["thresh"]
             ]
         else:
@@ -854,7 +854,7 @@ def score_plot(
                 adata.uns["dropkick_thresholds"][metrics[1]]["thresh"],
                 linestyle="--",
                 color="k",
-                linewidth=3,
+                linewidth=2,
             )
     # add colorbar inside scatter axes
     axins1 = inset_axes(
