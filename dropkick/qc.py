@@ -132,7 +132,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
             label="Genes",
         )
         # append list of legend entries
-        leg_entries = leg_entries + genes_pts
+        leg_entries = leg_entries + [genes_pts]
     ax.tick_params(axis="both", which="major", labelsize=12)
 
     if ambient or mito:
@@ -152,7 +152,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
                 label="% Ambient",
             )
             # append list of legend entries
-            leg_entries = leg_entries + ambient_pts
+            leg_entries = leg_entries + [ambient_pts]
         if mito:
             mito_pts = ax2.scatter(
                 list(range(adata.n_obs)),
@@ -166,7 +166,7 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
                 label="% Mito",
             )
             # append list of legend entries
-            leg_entries = leg_entries + mito_pts
+            leg_entries = leg_entries + [mito_pts]
         ax2.set_xscale("log")
         ax2.tick_params(axis="y", which="major", labelsize=12)
         ax.set_zorder(ax2.get_zorder() + 1)  # put ax in front of ax2
