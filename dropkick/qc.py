@@ -52,6 +52,7 @@ def dropout_plot(adata, show=False, ax=None):
                 y=((val_max - (0.10 * val_range)) - ((0.05 * val_range) * x)),
                 s=adata.var_names[adata.var.ambient][x],
                 fontsize=12,
+                fontstyle="italic",
             )
             for x in range(adata.var.ambient.sum())
         ]
@@ -63,6 +64,7 @@ def dropout_plot(adata, show=False, ax=None):
                 y=((val_max - (0.10 * val_range)) - ((0.05 * val_range) * x)),
                 s=adata.var_names[adata.var.ambient][x],
                 fontsize=12,
+                fontstyle="italic",
             )
             for x in range(10)
         ]
@@ -108,15 +110,17 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
         ax.set_ylabel("Total Counts", fontsize=12)
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.plot(
+    counts_ln = ax.plot(
         adata.obs.total_counts[np.argsort(adata.obs.total_counts)[::-1]].values,
         linewidth=2,
         color="k",
         alpha=0.8,
         label="Counts",
     )
+    # start list of legend entries
+    leg_entries = counts_ln
     if genes:
-        ax.scatter(
+        genes_pts = ax.scatter(
             list(range(adata.n_obs)),
             adata.obs.n_genes_by_counts[
                 np.argsort(adata.obs.total_counts)[::-1]
@@ -127,18 +131,16 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
             edgecolors="none",
             label="Genes",
         )
+        # append list of legend entries
+        leg_entries = leg_entries + genes_pts
     ax.tick_params(axis="both", which="major", labelsize=12)
-    if genes:
-        ax.legend(loc="lower left", fontsize=12)
-    else:
-        ax.legend_.remove()
 
     if ambient or mito:
         # plot percent ambient counts on right y-axis
         ax2 = ax.twinx()
         ax2.set_ylabel("% Counts", fontsize=12)
         if ambient:
-            ax2.scatter(
+            ambient_pts = ax2.scatter(
                 list(range(adata.n_obs)),
                 adata.obs.pct_counts_ambient[
                     np.argsort(adata.obs.total_counts)[::-1]
@@ -149,8 +151,10 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
                 edgecolors="none",
                 label="% Ambient",
             )
+            # append list of legend entries
+            leg_entries = leg_entries + ambient_pts
         if mito:
-            ax2.scatter(
+            mito_pts = ax2.scatter(
                 list(range(adata.n_obs)),
                 adata.obs.pct_counts_mito[
                     np.argsort(adata.obs.total_counts)[::-1]
@@ -161,11 +165,16 @@ def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None)
                 edgecolors="none",
                 label="% Mito",
             )
+            # append list of legend entries
+            leg_entries = leg_entries + mito_pts
         ax2.set_xscale("log")
         ax2.tick_params(axis="y", which="major", labelsize=12)
-        ax2.legend(loc="upper right", fontsize=12)
-
         ax.set_zorder(ax2.get_zorder() + 1)  # put ax in front of ax2
+
+    # add legend from entries
+    labs = [l.get_label() for l in leg_entries]
+    ax.legend(leg_entries, labs, loc="upper right", fontsize=12)
+
     ax.patch.set_visible(False)  # hide the 'canvas'
     if not show:
         return ax
