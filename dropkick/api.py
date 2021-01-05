@@ -689,6 +689,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
             .nlargest(3)
             .index[x],
             fontsize=12,
+            fontstyle="italic",
             color="g",
         )
         for x in range(3)
@@ -705,6 +706,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
             .nsmallest(3)
             .index[x],
             fontsize=12,
+            fontstyle="italic",
             color=cmap(1.0),
         )
         for x in range(3)
