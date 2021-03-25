@@ -1,3 +1,6 @@
+"""
+Logistic regression model functions for dropkick
+"""
 import numpy as np
 import scanpy as sc
 from scipy import stats
@@ -33,7 +36,7 @@ class LogitNet(BaseEstimator):
         Maximum number of lambda values to compute
 
     min_lambda_ratio : float, default 1e-4
-        In combination with n_lambda, the ratio of the smallest and largest
+        In combination with `n_lambda`, the ratio of the smallest and largest
         values of lambda computed.
 
     lambda_path : array, default None

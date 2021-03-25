@@ -1,17 +1,16 @@
 """
-The code below is a modified version of sklearn.metrics.scorer to allow for scoring
-the entire lambda path of a glmnet model.
+Modified version of `sklearn.metrics.scorer` to allow for scoring the entire lambda 
+path of a `glmnet` model.
 
-    - lambda parameter added to the scorers
-    - scorers return an array of scores, [n_lambda,]
+- lambda parameter added to the scorers
+- scorers return an array of scores, [n_lambda,]
 
-@authors: Andreas Mueller <amueller@ais.uni-bonn.de>
-          Lars Buitinck <L.J.Buitinck@uva.nl>
-          Arnaud Joly <arnaud.v.joly@gmail.com>
+Authors: Andreas Mueller <amueller@ais.uni-bonn.de>, 
+Lars Buitinck <L.J.Buitinck@uva.nl>, 
+Arnaud Joly <arnaud.v.joly@gmail.com>
 
 License: Simplified BSD
 """
-
 import numpy as np
 import six
 from abc import ABCMeta, abstractmethod

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Automated QC classifier command line interface
-
-@author: C Heiser
+dropkick command line interface
 """
 import os, errno, argparse
 import scanpy as sc

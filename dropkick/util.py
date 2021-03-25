@@ -1,3 +1,6 @@
+"""
+Utility functions for scoring dropkick logistic regression model
+"""
 import math
 import warnings
 import scanpy as sc

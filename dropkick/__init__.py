@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-package initialization
-
-@author: C Heiser
+Automated cell filtering and QC of single-cell RNA sequencing data
 """
 from .api import (
     dropkick,

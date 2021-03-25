@@ -1,3 +1,6 @@
+"""
+Error reporting for dropkick model
+"""
 import warnings
 
 

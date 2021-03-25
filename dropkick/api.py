@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Automated QC classifier pipeline
-
-@author: C Heiser
+Functions for cell filtering of scRNA-seq data via dropkick
 """
 import argparse
 import sys
@@ -42,32 +40,45 @@ def recipe_dropkick(
     """
     dropkick preprocessing recipe
 
-    Parameters:
-        adata (AnnData.AnnData): object with raw counts data in .X
-        filter (bool): remove cells with less than min_genes detected
-            and genes with zero total counts
-        min_genes (int): threshold for minimum genes detected.
-            Ignored if filter==False.
-        calc_metrics (bool): if False, do not calculate metrics in .obs/.var
-        mito_names (str): substring encompassing mitochondrial gene names for
-            calculation of mito expression. Ignored if calc_metrics==False.
-        n_ambient (int): number of ambient genes to call (top genes by cells).
-            Ignored if calc_metrics==False.
-        target_sum (int): total sum of counts for each cell prior to arcsinh 
-            or log1p transformations; if None, use median counts.
-        n_hvgs (int or None): number of HVGs to calculate using Seurat method.
-            if None, do not calculate HVGs.
-        X_final (str): which normalization layer should be left in .X slot?
-            ("raw_counts","arcsinh_norm","log1p_norm")
-        verbose (bool): print updates to the console?
+    Parameters
+    ----------
 
-    Returns:
-        adata (AnnData.AnnData): updated object includes:
-            - useful .obs and .var columns (if calc_metrics==True)
-                ("total_counts", "pct_counts_mito", "n_genes_by_counts", etc.)
-            - raw counts (adata.layers["raw_counts"])
-            - arcsinh-transformed normalized counts (adata.layers["arcsinh_norm"])
-            - highly variable genes if desired (adata.var["highly_variable"])
+    adata : AnnData.AnnData
+        object with raw counts data in `.X`
+    filter : bool, optional (default=True)
+        remove cells with less than min_genes detected and genes with zero total counts
+    min_genes : int, optional (default=50)
+        threshold for minimum genes detected. ignored if `filter`==False.
+    calc_metrics : bool, optional (default=True)
+        if False, do not calculate metrics in `.obs`/`.var`
+    mito_names : str, optional (default="^mt-|^MT-")
+        substring encompassing mitochondrial gene names for calculation of mito 
+        expression. ignored if `calc_metrics`==False.
+    n_ambient : int, optional (default=10)
+        number of ambient genes to call (top genes by cells). ignored if 
+        `calc_metrics`==False.
+    target_sum : int, optional (default=None)
+        total sum of counts for each cell prior to arcsinh or log1p transformations. 
+        if None, use median counts.
+    n_hvgs : int, optional (default=2000)
+        number of HVGs to calculate using Seurat method. if None, do not calculate 
+        HVGs.
+    X_final : str, optional (default="raw_counts")
+        which normalization layer should be left in `.X` slot? ("raw_counts", 
+        "arcsinh_norm", "log1p_norm")
+    verbose : bool, optional (default=True)
+        print updates to the console
+
+    Returns
+    -------
+
+    adata : AnnData.AnnData
+        updated object includes:
+        - useful `.obs` and `.var` columns (if `calc_metrics`==True)
+            ("total_counts", "pct_counts_mito", "n_genes_by_counts", etc.)
+        - raw counts (`adata.layers["raw_counts"]`)
+        - arcsinh-transformed normalized counts (`adata.layers["arcsinh_norm"]`)
+        - highly variable genes if desired (`adata.var["highly_variable"]`)
     """
     if filter:
         # remove cells and genes with zero total counts
@@ -175,17 +186,28 @@ def auto_thresh_obs(
     directions=["above"],
 ):
     """
-    automated thresholding on metrics in adata.obs
+    Automated thresholding on metrics in `adata.obs`
 
-    Parameters:
-        adata (anndata.AnnData): object containing unfiltered scRNA-seq data
-        obs_cols (list of str): name of column(s) to threshold from adata.obs
-        methods (list of str): one of 'otsu', 'multiotsu', 'li', or 'mean'
-        directions (list of str): 'below' or 'above', indicating which direction to keep
+    Parameters
+    ----------
 
-    Returns:
-        thresholds (dict): keys are obs_cols and values are dictionaries with
-        "thresh" : threshold results & "direction" : direction to keep for training
+    adata : anndata.AnnData
+        object containing unfiltered scRNA-seq data
+    obs_cols : list of str, optional (default="arcsinh_n_genes_by_counts")
+        name of column(s) to threshold from `adata.obs`
+    methods : list of str {"otsu","multiotsu","li","mean"}, optional 
+    (default="multiotsu")
+        automated thresholding method(s) corresponding to each element in `obs_cols`
+    directions : list of str {"above","below"}, optional (default="above")
+        which direction to keep during training (dropkick label = 1) corresponding 
+        to each element in `obs_cols`
+
+    Returns
+    -------
+
+    thresholds : dict
+        keys are `obs_cols` and values are dictionaries with "thresh" : threshold 
+        results & "direction" : direction to keep for training
     """
     # convert to lists before looping
     if isinstance(obs_cols, str):
@@ -220,19 +242,31 @@ def auto_thresh_obs(
 
 def plot_thresh_obs(adata, thresholds, bins=40, axes=None, save_to=None, verbose=True):
     """
-    plot automated thresholding on metrics in adata.obs as output by auto_thresh_obs()
+    Plots automated thresholding on metrics in `adata.obs` as output by 
+    `auto_thresh_obs()`
 
-    Parameters:
-        adata (anndata.AnnData): object containing unfiltered scRNA-seq data
-        thresholds (dict): output of auto_thresh_obs() function
-        bins (int): number of bins for histogram
-        axes (matplotlib.axes.Axes): single ax or list of axes objects corresponding
-            to number of thresholds to plot. ignored if save_to is not None.
-        save_to (str): path to .png file for saving figure; returns figure by default
-        verbose (bool): print updates to console
+    Parameters
+    ----------
 
-    Returns:
-        plot of distributions of obs_cols in thresholds dictionary with corresponding thresholds
+    adata : anndata.AnnData
+        object containing unfiltered scRNA-seq data
+    thresholds : dict
+        output of `auto_thresh_obs()` function
+    bins : int, optional (default=40)
+        number of bins for histogram
+    axes : matplotlib.axes.Axes, optional (default=None)
+        single ax or list of axes objects corresponding to number of thresholds to 
+        plot. ignored if `save_to` is not None.
+    save_to : str, optional (default=None)
+        path to `.png` file for saving figure; returns figure by default
+    verbose : bool, optional (default=True)
+        print updates to console
+
+    Returns
+    -------
+
+    plot of distributions of `obs_cols` in thresholds dictionary with corresponding 
+    thresholds
     """
     if save_to or not axes:
         fig, axes = plt.subplots(
@@ -284,18 +318,29 @@ def filter_thresh_obs(
     verbose=True,
 ):
     """
-    filter cells by thresholding on metrics in adata.obs as output by auto_thresh_obs()
+    Filters cells by thresholding on metrics in `adata.obs` as output by 
+    `auto_thresh_obs()`
 
-    Parameters:
-        adata (anndata.AnnData): object containing unfiltered scRNA-seq data
-        thresholds (dict): output of auto_thresh_obs() function
-        obs_cols (list of str): name of column(s) to threshold from adata.obs
-        inclusive (bool): include cells at the thresholds?
-        name (str): name of .obs col containing final labels
-        verbose (bool): print updates to console
+    Parameters
+    ----------
 
-    Returns:
-        updated adata with filter labels in adata.obs[name]
+    adata : anndata.AnnData
+        object containing unfiltered scRNA-seq data
+    thresholds : dict
+        output of `auto_thresh_obs()` function
+    obs_cols : list of str, optional (default="arcsinh_n_genes_by_counts")
+        name of column(s) to threshold from `adata.obs`
+    inclusive : bool, optional (default=True)
+        include cells at the thresholds
+    name : str, optional (default="thresh_filter")
+        name of `.obs` col containing final labels
+    verbose : bool, optional (default=True)
+        print updates to console
+
+    Returns
+    -------
+
+    updated `adata` with filter labels in `adata.obs[name]`
     """
     # convert to lists before looping
     if isinstance(obs_cols, str):
@@ -431,34 +476,51 @@ def dropkick(
     verbose=True,
 ):
     """
-    generate logistic regression model of cell quality
+    Generates logistic regression model of cell quality
 
-    Parameters:
-        adata (anndata.AnnData): object containing unfiltered, raw scRNA-seq
-            counts in .X layer
-        min_genes (int): threshold for minimum genes detected. Ignores all cells
-            with less than min_genes (dropkick label = 0).
-        mito_names (str): substring encompassing mitochondrial gene names for
-            calculation of mito expression
-        n_ambient (int): number of ambient genes to call. top genes by cells.
-        n_hvgs (int or None): number of HVGs to calculate using Seurat method.
-            if None, do not calculate HVGs
-        metrics (list of str): name of column(s) to threshold from adata.obs
-        thresh_methods (list of str): one of 'otsu', 'multiotsu', 'li', or 'mean'
-        directions (list of str): 'below' or 'above', indicating which
-            direction to keep (dropkick label = 1)
-        alphas (list of float): alpha values to test using glmnet with n-fold
-            cross validation
-        max_iter (int): number of iterations for glmnet optimization
-        n_jobs (int): number of threads for cross validation by glmnet
-        seed (int): random state for cross validation by glmnet
-        verbose (bool): verbosity for glmnet training and warnings
+    Parameters
+    ----------
 
-    Returns:
-        rc (LogisticRegression): trained logistic regression classifier
+    adata : anndata.AnnData
+        object containing unfiltered, raw scRNA-seq counts in `.X` layer
+    min_genes : int, optional (default=50)
+        threshold for minimum genes detected. ignores all cells with less than 
+        min_genes (dropkick label = 0).
+    mito_names : str, optional (default="^mt-|^MT-")
+        substring encompassing mitochondrial gene names for calculation of mito 
+        expression
+    n_ambient : int, optional (default=10)
+        number of ambient genes to call. top genes by cells.
+    n_hvgs : int or None, optional (default=2000)
+        number of HVGs to calculate using Seurat method. if None, do not calculate 
+        HVGs
+    metrics : list of str, optional (default="arcsinh_n_genes_by_counts")
+        name of column(s) to threshold from `adata.obs`
+    thresh_methods : list of str {"otsu","multiotsu","li","mean"}, optional 
+    (default="multiotsu")
+        automated thresholding method(s) corresponding to each element in `metrics`
+    directions : list of str {"above","below"}, optional (default="above")
+        which direction to keep during training (dropkick label = 1) corresponding 
+        to each element in `metrics`
+    alphas : list of float, optional (default=0.1)
+        alpha value(s) to test using glmnet with n-fold cross validation
+    max_iter : int, optional (default=2000)
+        number of iterations for glmnet optimization
+    n_jobs : int, optional (default=2)
+        number of threads for cross validation by glmnet
+    seed : int, optional (default=18)
+        random state for cross validation by glmnet
+    verbose : bool, optional (default=True)
+        verbosity for glmnet training and warnings
 
-        updates adata inplace to include 'train', 'dropkick_score', and
-            'dropkick_label' columns in .obs
+    Returns
+    -------
+
+    rc : LogisticRegression
+        trained logistic regression classifier
+
+    updates `adata` inplace to include "train", "dropkick_score", and 
+    "dropkick_label" columns in `.obs`
     """
     # 0) preprocess counts and calculate required QC metrics
     a = adata.copy()  # make copy of anndata before manipulating
@@ -600,15 +662,21 @@ def dropkick(
 
 def coef_inventory(adata, n=10):
     """
-    return highest and lowest coefficient values from logistic regression model,
+    Returns highest and lowest coefficient values from logistic regression model, 
     along with sparsity
 
-    Parameters:
-        adata (anndata.AnnData): object generated from dropkick
-        n (int): number of genes to show at top and bottom of coefficient list
+    Parameters
+    ----------
 
-    Returns:
-        prints top and bottom n genes by their coefficient values
+    adata : anndata.AnnData
+        object generated from `dropkick`
+    n : int, optional (default=10)
+        number of genes to show at top and bottom of coefficient list
+
+    Returns
+    -------
+
+    prints top and bottom `n` genes by their coefficient values to console
     """
     print("\nTop HVGs by coefficient value (good cells):")
     print(adata.var.loc[-adata.var.dropkick_coef.isna(), "dropkick_coef"].nlargest(n))
@@ -626,19 +694,30 @@ def coef_inventory(adata, n=10):
 
 def coef_plot(adata, axes=None, save_to=None, verbose=True):
     """
-    plot dropkick coefficient values and cross validation (CV) scores for tested values
-    of lambda (lambda_path)
+    Plots dropkick coefficient values and cross validation (CV) scores for tested 
+    values of lambda (`lambda_path`)
 
-    Parameters:
-        adata (anndata.AnnData): object generated from dropkick
-        axes (matplotlib.axes.Axes): axes (2) object for plotting. if None, create new.
-            ignored if save_to is not None.
-        save_to (str): path to .png file for saving figure
-        verbose (bool): print updates to console
+    Parameters
+    ----------
 
-    Returns:
-        plot of CV scores (mean +/- SEM) and coefficient values (coef_path) versus
-        log(lambda_path). includes indicator of chosen lambda value.
+    adata : anndata.AnnData
+        object generated from `dropkick`
+    axes : matplotlib.axes.Axes, optional (default=None)
+        axes (2) object for plotting. if None, create new. ignored if `save_to` is not 
+        None.
+    save_to : str, optional (default=None)
+        path to `.png` file for saving figure
+    verbose : bool, optional (default=True)
+        print updates to console
+
+    Returns
+    -------
+
+    fig : matplotlib.figure
+        plot of CV scores (mean +/- SEM) and coefficient values (`coef_path`) versus
+        log(`lambda_path`). includes indicator of chosen lambda value.
+
+    if `save_to` is not None, write to file instead of returning `fig` object.
     """
     cmap = cm.get_cmap("coolwarm")
     if save_to or not axes:
@@ -761,18 +840,31 @@ def score_plot(
     verbose=True,
 ):
     """
-    plot scatter of barcodes across two metrics, with points colored by dropkick_score.
-    show automated thresholding on metrics in adata.obs as output by auto_thresh_obs()
+    Plots scatter of barcodes across two metrics, with points colored by 
+    `dropkick_score`. Shows automated thresholding on metrics in `adata.obs` as output 
+    by `auto_thresh_obs()`
 
-    Parameters:
-        adata (anndata.AnnData): object containing dropkick-processed scRNA-seq data
-        metrics (list of str): name of metrics to plot scatter and histograms for
-        save_to (str): path to .png file for saving figure; returns figure by default
-        verbose (bool): print updates to console
+    Parameters
+    ----------
 
-    Returns:
-        g (seaborn.jointgrid): joint plot of metric distributions colored by 
-            dropkick_score and containing corresponding training thresholds
+    adata : anndata.AnnData
+        object generated from `dropkick`
+    metrics : list of str, optional 
+    (default=["arcsinh_n_genes_by_counts","pct_counts_ambient"])
+        names of metrics to plot scatter and histograms for
+    save_to : str, optional (default=None)
+        path to `.png` file for saving figure; returns figure if None
+    verbose : bool, optional (default=True)
+        print updates to console
+
+    Returns
+    -------
+
+    g : seaborn.jointgrid
+        joint plot of metric distributions colored by `dropkick_score` and containing 
+        corresponding training thresholds
+
+    if `save_to` is not None, write to file instead of returning `g` object.
     """
     # initialize joint plot object
     g = sns.jointplot(

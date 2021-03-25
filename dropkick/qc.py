@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Automated ambient gene testing and counts data QC
-
-@author: C Heiser
 """
 import argparse
 import numpy as np
@@ -15,15 +13,24 @@ from .api import recipe_dropkick
 
 def dropout_plot(adata, show=False, ax=None):
     """
-    plot dropout rates for all genes
+    Plots dropout rates for all genes
 
-    Parameters:
-        adata (anndata.AnnData): object containing unfiltered scRNA-seq data
-        show (bool): show plot or return object
-        ax (matplotlib.axes.Axes): axes object for plotting. if None, create new.
+    Parameters
+    ----------
 
-    Returns:
-        plot of gene dropout rates
+    adata : anndata.AnnData
+        object containing unfiltered scRNA-seq data
+    show : bool, optional (default=False)
+        show plot or return object
+    ax : matplotlib.axes.Axes, optional (default=None)
+        axes object for plotting. if None, create new.
+
+    Returns
+    -------
+
+    ax : matplotlib.axes.Axes
+        plot of gene dropout rates. return Axes object only if `show`==False, 
+        otherwise output plot.
     """
     if not ax:
         _, ax = plt.subplots(figsize=(4, 4))
@@ -85,19 +92,31 @@ def dropout_plot(adata, show=False, ax=None):
 
 def counts_plot(adata, show=False, genes=True, ambient=True, mito=True, ax=None):
     """
-    plot total counts for all barcodes
+    Plots total counts for all barcodes
 
-    Parameters:
-        adata (anndata.AnnData): object containing unfiltered scRNA-seq data
-        show (bool): show plot or return object
-        genes (bool): show n_genes detected as points
-        ambient (bool): show pct_counts_ambient as points
-        mito (bool): show pct_counts_mito as points
-        ax (matplotlib.axes.Axes): axes object for plotting. if None, create new.
+    Parameters
+    ----------
 
-    Returns:
-        log-log plot of total counts and total genes per ranked barcode,
-        with percent ambient and mitochondrial counts on secondary axis if desired
+    adata : anndata.AnnData
+        object containing unfiltered scRNA-seq data
+    show : bool, optional (default=False)
+        show plot or return object
+    genes : bool, optional (default=True)
+        show `n_genes` detected as points
+    ambient : bool, optional (default=True)
+        show `pct_counts_ambient` as points
+    mito : bool, optional (default=True)
+        show `pct_counts_mito` as points
+    ax : matplotlib.axes.Axes, optional (default=None)
+        axes object for plotting. if None, create new.
+
+    Returns
+    -------
+
+    ax : matplotlib.axes.Axes
+        log-log plot of total counts and total genes per ranked barcode, with percent 
+        ambient and mitochondrial counts on secondary axis if desired. return Axes 
+        object only if `show`==False, otherwise output plot.
     """
     cmap = cm.get_cmap("coolwarm")
     if not ax:
@@ -184,18 +203,32 @@ def qc_summary(
     adata, mito=True, ambient=True, genes=True, fig=None, save_to=None, verbose=True
 ):
     """
-    plot summary of counts distribution and ambient genes
+    Plots summary of counts distribution and ambient genes
 
-    Parameters:
-        adata (anndata.AnnData): object containing unfiltered scRNA-seq data
-        mito (bool): show pct_counts_mito as points
-        fig (matplotlib.figure): figure object for plotting. if None, create new.
-        save_to (str): path to .png file for saving figure; returns figure by default
-        verbose (bool): print updates to console
+    Parameters
+    ----------
 
-    Returns:
-        fig (matplotlib.figure): counts_plot(), sc.pl.highest_expr_genes(), and
-            dropout_plot() in single figure
+    adata : anndata.AnnData
+        object containing unfiltered scRNA-seq data
+    mito : bool, optional (default=True)
+        show `pct_counts_mito` as points
+    ambient : bool, optional (default=True)
+        show `pct_counts_ambient` as points
+    genes : bool, optional (default=True)
+        show `n_genes_by_counts` as points
+    fig : matplotlib.figure, optional (default=None)
+        figure object for plotting. if None, create new.
+    save_to : str, optional (default=None)
+        path to `.png` file for saving figure; returns figure by default
+    verbose : bool, optional (default=True)
+        print updates to console
+
+    Returns
+    -------
+
+    fig : matplotlib.figure
+        `counts_plot()`, `sc.pl.highest_expr_genes()`, and `dropout_plot()` in single 
+        figure
     """
     if not fig:
         fig = plt.figure(figsize=(14, 7))
