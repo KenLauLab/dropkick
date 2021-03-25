@@ -51,6 +51,8 @@ look at the total UMI distribution and ambient genes, saved as
 See |dropkick_tutorial.ipynb|_ for an
 interactive walkthrough of the ``dropkick`` pipeline and its outputs.
 
+Full documentation is available at |KenLauLab.github.io/dropkick|_.
+
 .. |Dropkick Logo| image:: https://github.com/KenLauLab/dropkick/blob/master/data/dropkick_logo.png
 
 .. |Latest Version| image:: https://img.shields.io/pypi/v/dropkick
@@ -61,3 +63,6 @@ interactive walkthrough of the ``dropkick`` pipeline and its outputs.
 
 .. |dropkick_tutorial.ipynb| replace:: ``dropkick_tutorial.ipynb``
 .. _dropkick_tutorial.ipynb: dropkick_tutorial.ipynb
+
+.. |KenLauLab.github.io/dropkick| replace:: ``KenLauLab.github.io/dropkick``
+.. _KenLauLab.github.io/dropkick: https://kenlaulab.github.io/dropkick/
