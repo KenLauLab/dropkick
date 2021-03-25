@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>dropkick.scorer API documentation</title>
+<meta name="description" content="Modified version of `sklearn.metrics.scorer` to allow for scoring the entire lambda
+path of a `glmnet` model …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>dropkick.scorer</code></h1>
+</header>
+<section id="section-intro">
+<p>Modified version of <code>sklearn.metrics.scorer</code> to allow for scoring the entire lambda
+path of a <code>glmnet</code> model.</p>
+<ul>
+<li>lambda parameter added to the scorers</li>
+<li>scorers return an array of scores, [n_lambda,]</li>
+</ul>
+<p>Authors: Andreas Mueller <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#97;&#109;&#117;&#101;&#108;&#108;&#101;&#114;&#64;&#97;&#105;&#115;&#46;&#117;&#110;&#105;&#45;&#98;&#111;&#110;&#110;&#46;&#100;&#101;">&#97;&#109;&#117;&#101;&#108;&#108;&#101;&#114;&#64;&#97;&#105;&#115;&#46;&#117;&#110;&#105;&#45;&#98;&#111;&#110;&#110;&#46;&#100;&#101;</a>,
+Lars Buitinck <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#76;&#46;&#74;&#46;&#66;&#117;&#105;&#116;&#105;&#110;&#99;&#107;&#64;&#117;&#118;&#97;&#46;&#110;&#108;">&#76;&#46;&#74;&#46;&#66;&#117;&#105;&#116;&#105;&#110;&#99;&#107;&#64;&#117;&#118;&#97;&#46;&#110;&#108;</a>,
+Arnaud Joly <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#97;&#114;&#110;&#97;&#117;&#100;&#46;&#118;&#46;&#106;&#111;&#108;&#121;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;">&#97;&#114;&#110;&#97;&#117;&#100;&#46;&#118;&#46;&#106;&#111;&#108;&#121;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;</a></p>
+<p>License: Simplified BSD</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+Modified version of `sklearn.metrics.scorer` to allow for scoring the entire lambda 
+path of a `glmnet` model.
+
+- lambda parameter added to the scorers
+- scorers return an array of scores, [n_lambda,]
+
+Authors: Andreas Mueller &lt;amueller@ais.uni-bonn.de&gt;, 
+Lars Buitinck &lt;L.J.Buitinck@uva.nl&gt;, 
+Arnaud Joly &lt;arnaud.v.joly@gmail.com&gt;
+
+License: Simplified BSD
+&#34;&#34;&#34;
+import numpy as np
+import six
+from abc import ABCMeta, abstractmethod
+from functools import partial
+from sklearn.metrics import (
+    r2_score,
+    median_absolute_error,
+    mean_absolute_error,
+    mean_squared_error,
+    accuracy_score,
+    f1_score,
+    roc_auc_score,
+    average_precision_score,
+    precision_score,
+    recall_score,
+    log_loss,
+)
+from sklearn.utils.multiclass import type_of_target
+
+
+class _BaseScorer(six.with_metaclass(ABCMeta, object)):
+    def __init__(self, score_func, sign, kwargs):
+        self._kwargs = kwargs
+        self._score_func = score_func
+        self._sign = sign
+
+    @abstractmethod
+    def __call__(self, estimator, X, y, sample_weight=None):
+        pass
+
+    def __repr__(self):
+        kwargs_string = &#34;&#34;.join(
+            [&#34;, %s=%s&#34; % (str(k), str(v)) for k, v in self._kwargs.items()]
+        )
+        return &#34;make_scorer(%s%s%s%s)&#34; % (
+            self._score_func.__name__,
+            &#34;&#34; if self._sign &gt; 0 else &#34;, greater_is_better=False&#34;,
+            self._factory_args(),
+            kwargs_string,
+        )
+
+    def _factory_args(self):
+        &#34;&#34;&#34;Return non-default make_scorer arguments for repr.&#34;&#34;&#34;
+        return &#34;&#34;
+
+
+class _PredictScorer(_BaseScorer):
+    def __call__(self, estimator, X, y_true, sample_weight=None, lamb=None):
+        &#34;&#34;&#34;
+        Evaluate predicted target values for X relative to y_true and one or
+        more values for lambda.
+
+        Parameters
+        ----------
+        estimator : object
+            Trained estimator to use for scoring. Must have a predict_proba
+            method; the output of that is used to compute the score.
+
+        X : array-like or sparse matrix
+            Test data that will be fed to estimator.predict.
+
+        y_true : array-like
+            Gold standard target values for X.
+
+        sample_weight : array-like, optional (default=None)
+            Sample weights.
+
+        lamb : array, shape (n_lambda,)
+            Values of lambda from lambda_path_ from which to score predictions.
+
+        Returns
+        -------
+        score : array, shape (n_lambda,)
+            Score function applied to prediction of estimator on X.
+        &#34;&#34;&#34;
+        y_pred = estimator.predict(X, lamb=lamb)
+        if sample_weight is not None:
+            scores = np.apply_along_axis(
+                lambda y_hat: self._score_func(
+                    y_true, y_hat, sample_weight=sample_weight, **self._kwargs
+                ),
+                0,
+                y_pred,
+            )
+        else:
+            scores = np.apply_along_axis(
+                lambda y_hat: self._score_func(y_true, y_hat, **self._kwargs), 0, y_pred
+            )
+        return self._sign * scores
+
+
+class _ProbaScorer(_BaseScorer):
+    def __call__(self, clf, X, y_true, sample_weight=None, lamb=None):
+        &#34;&#34;&#34;
+        Evaluate predicted probabilities for X relative to y_true.
+
+        Parameters
+        ----------
+        clf : object
+            Trained classifier to use for scoring. Must have a predict_proba
+            method; the output of that is used to compute the score.
+
+        X : array-like or sparse matrix
+            Test data that will be fed to clf.predict_proba.
+
+        y_true : array-like
+            Gold standard target values for X. These must be class labels,
+            not probabilities.
+
+        sample_weight : array-like, optional (default=None)
+            Sample weights.
+
+        lamb : array, shape (n_lambda,)
+            Values of lambda from lambda_path_ from which to score predictions.
+
+        Returns
+        -------
+        score : array, shape (n_lambda,)
+            Score function applied to prediction of estimator on X.
+        &#34;&#34;&#34;
+        y_pred = clf.predict_proba(
+            X, lamb=lamb
+        )  # y_pred shape (n_samples, n_classes, n_lambda)
+
+        if sample_weight is not None:
+            score_func = lambda y_hat: self._score_func(
+                y_true, y_hat, sample_weight=sample_weight, **self._kwargs
+            )
+        else:
+            score_func = lambda y_hat: self._score_func(y_true, y_hat, **self._kwargs)
+
+        scores = np.zeros(y_pred.shape[-1])
+        for i in range(len(scores)):
+            scores[i] = score_func(y_pred[..., i])
+
+        return self._sign * scores
+
+    def _factory_args(self):
+        return &#34;, needs_proba=True&#34;
+
+
+class _ThresholdScorer(_BaseScorer):
+    def __call__(self, clf, X, y_true, sample_weight=None, lamb=None):
+        &#34;&#34;&#34;
+        Evaluate decision function output for X relative to y_true.
+
+        Parameters
+        ----------
+        clf : object
+            Trained classifier to use for scoring. Must have either a
+            decision_function method or a predict_proba method; the output of
+            that is used to compute the score.
+
+        X : array-like or sparse matrix
+            Test data that will be fed to clf.decision_function or
+            clf.predict_proba.
+
+        y_true : array-like
+            Gold standard target values for X. These must be class labels,
+            not decision function values.
+
+        sample_weight : array-like, optional (default=None)
+            Sample weights.
+
+        lamb : array, shape (n_lambda,)
+            Values of lambda from lambda_path_ from which to score predictions.
+
+        Returns
+        -------
+        score : array, shape (n_lambda,)
+            Score function applied to prediction of estimator on X.
+        &#34;&#34;&#34;
+        y_type = type_of_target(y_true)
+        if y_type not in (&#34;binary&#34;, &#34;multilabel-indicator&#34;):
+            raise ValueError(&#34;{0} format is not supported&#34;.format(y_type))
+
+        y_pred = clf.decision_function(X, lamb=lamb)
+        if sample_weight is not None:
+            scores = np.apply_along_axis(
+                lambda y_hat: self._score_func(
+                    y_true, y_hat, sample_weight=sample_weight, **self._kwargs
+                ),
+                0,
+                y_pred,
+            )
+        else:
+            scores = np.apply_along_axis(
+                lambda y_hat: self._score_func(y_true, y_hat, **self._kwargs), 0, y_pred
+            )
+        return self._sign * scores
+
+    def _factory_args(self):
+        return &#34;, needs_threshold=True&#34;
+
+
+def get_scorer(scoring):
+    if isinstance(scoring, six.string_types):
+        try:
+            scorer = SCORERS[scoring]
+        except KeyError:
+            raise ValueError(
+                &#34;%r is not a valid scoring value. &#34;
+                &#34;Valid options are %s&#34; % (scoring, sorted(SCORERS.keys()))
+            )
+    else:
+        scorer = scoring
+    return scorer
+
+
+def _passthrough_scorer(estimator, *args, **kwargs):
+    &#34;&#34;&#34;Function that wraps estimator.score&#34;&#34;&#34;
+    return estimator.score(*args, **kwargs)
+
+
+def check_scoring(estimator, scoring=None, allow_none=False):
+    &#34;&#34;&#34;
+    Determine scorer from user options.
+    A TypeError will be thrown if the estimator cannot be scored.
+
+    Parameters
+    ----------
+    estimator : estimator object implementing &#39;fit&#39;
+        The object to use to fit the data.
+
+    scoring : string, callable or None, optional, default: None
+        A string (see model evaluation documentation) or
+        a scorer callable object / function with signature
+        ``scorer(estimator, X, y)``.
+
+    allow_none : boolean, optional, default: False
+        If no scoring is specified and the estimator has no score function, we
+        can either return None or raise an exception.
+
+    Returns
+    -------
+    scoring : callable
+        A scorer callable object / function with signature
+        ``scorer(estimator, X, y)``.
+    &#34;&#34;&#34;
+    has_scoring = scoring is not None
+    if not hasattr(estimator, &#34;fit&#34;):
+        raise TypeError(
+            &#34;estimator should a be an estimator implementing &#34;
+            &#34;&#39;fit&#39; method, %r was passed&#34; % estimator
+        )
+    elif has_scoring:
+        return get_scorer(scoring)
+    elif hasattr(estimator, &#34;score&#34;):
+        return _passthrough_scorer
+    elif allow_none:
+        return None
+    else:
+        raise TypeError(
+            &#34;If no scoring is specified, the estimator passed should &#34;
+            &#34;have a &#39;score&#39; method. The estimator %r does not.&#34; % estimator
+        )
+
+
+def make_scorer(
+    score_func,
+    greater_is_better=True,
+    needs_proba=False,
+    needs_threshold=False,
+    **kwargs
+):
+    &#34;&#34;&#34;
+    Make a scorer from a performance metric or loss function.
+    This factory function wraps scoring functions for use in GridSearchCV
+    and cross_val_score. It takes a score function, such as ``accuracy_score``,
+    ``mean_squared_error``, ``adjusted_rand_index`` or ``average_precision``
+    and returns a callable that scores an estimator&#39;s output.
+    Read more in the :ref:`User Guide &lt;scoring&gt;`.
+
+    Parameters
+    ----------
+    score_func : callable,
+        Score function (or loss function) with signature
+        ``score_func(y, y_pred, **kwargs)``.
+
+    greater_is_better : boolean, default=True
+        Whether score_func is a score function (default), meaning high is good,
+        or a loss function, meaning low is good. In the latter case, the
+        scorer object will sign-flip the outcome of the score_func.
+
+    needs_proba : boolean, default=False
+        Whether score_func requires predict_proba to get probability estimates
+        out of a classifier.
+
+    needs_threshold : boolean, default=False
+        Whether score_func takes a continuous decision certainty.
+        This only works for binary classification using estimators that
+        have either a decision_function or predict_proba method.
+
+        For example ``average_precision`` or the area under the roc curve
+        can not be computed using discrete predictions alone.
+
+    **kwargs : additional arguments
+        Additional parameters to be passed to score_func.
+
+    Returns
+    -------
+    scorer : callable
+        Callable object that returns a scalar score; greater is better.
+
+    Examples
+    --------
+    &gt;&gt;&gt; from sklearn.metrics import fbeta_score, make_scorer
+    &gt;&gt;&gt; ftwo_scorer = make_scorer(fbeta_score, beta=2)
+    &gt;&gt;&gt; ftwo_scorer
+    make_scorer(fbeta_score, beta=2)
+    &gt;&gt;&gt; from sklearn.grid_search import GridSearchCV
+    &gt;&gt;&gt; from sklearn.svm import LinearSVC
+    &gt;&gt;&gt; grid = GridSearchCV(LinearSVC(), param_grid={&#39;C&#39;: [1, 10]},
+    ...                     scoring=ftwo_scorer)
+    &#34;&#34;&#34;
+    sign = 1 if greater_is_better else -1
+    if needs_proba and needs_threshold:
+        raise ValueError(
+            &#34;Set either needs_proba or needs_threshold to True,&#34; &#34; but not both.&#34;
+        )
+    if needs_proba:
+        cls = _ProbaScorer
+    elif needs_threshold:
+        cls = _ThresholdScorer
+    else:
+        cls = _PredictScorer
+    return cls(score_func, sign, kwargs)
+
+
+# Standard regression scores
+r2_scorer = make_scorer(r2_score)
+mean_squared_error_scorer = make_scorer(mean_squared_error, greater_is_better=False)
+mean_absolute_error_scorer = make_scorer(mean_absolute_error, greater_is_better=False)
+median_absolute_error_scorer = make_scorer(
+    median_absolute_error, greater_is_better=False
+)
+
+# Standard Classification Scores
+accuracy_scorer = make_scorer(accuracy_score)
+f1_scorer = make_scorer(f1_score)
+
+# Score functions that need decision values
+roc_auc_scorer = make_scorer(
+    roc_auc_score, greater_is_better=True, needs_threshold=True
+)
+average_precision_scorer = make_scorer(average_precision_score, needs_threshold=True)
+precision_scorer = make_scorer(precision_score)
+recall_scorer = make_scorer(recall_score)
+
+# Score function for probabilistic classification
+log_loss_scorer = make_scorer(log_loss, greater_is_better=False, needs_proba=True)
+
+SCORERS = dict(
+    r2=r2_scorer,
+    median_absolute_error=median_absolute_error_scorer,
+    mean_absolute_error=mean_absolute_error_scorer,
+    mean_squared_error=mean_squared_error_scorer,
+    accuracy=accuracy_scorer,
+    roc_auc=roc_auc_scorer,
+    average_precision=average_precision_scorer,
+    log_loss=log_loss_scorer,
+)
+
+for name, metric in [
+    (&#34;precision&#34;, precision_score),
+    (&#34;recall&#34;, recall_score),
+    (&#34;f1&#34;, f1_score),
+]:
+    SCORERS[name] = make_scorer(metric)
+    for average in [&#34;macro&#34;, &#34;micro&#34;, &#34;samples&#34;, &#34;weighted&#34;]:
+        qualified_name = &#34;{0}_{1}&#34;.format(name, average)
+        SCORERS[qualified_name] = make_scorer(
+            partial(metric, pos_label=None, average=average)
+        )</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="dropkick.scorer.check_scoring"><code class="name flex">
+<span>def <span class="ident">check_scoring</span></span>(<span>estimator, scoring=None, allow_none=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Determine scorer from user options.
+A TypeError will be thrown if the estimator cannot be scored.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>estimator</code></strong> :&ensp;<code>estimator object implementing 'fit'</code></dt>
+<dd>The object to use to fit the data.</dd>
+<dt><strong><code>scoring</code></strong> :&ensp;<code>string, callable</code> or <code>None</code>, optional, default<code>: None</code></dt>
+<dd>A string (see model evaluation documentation) or
+a scorer callable object / function with signature
+<code>scorer(estimator, X, y)</code>.</dd>
+<dt><strong><code>allow_none</code></strong> :&ensp;<code>boolean</code>, optional, default<code>: False</code></dt>
+<dd>If no scoring is specified and the estimator has no score function, we
+can either return None or raise an exception.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>scoring</code></strong> :&ensp;<code>callable</code></dt>
+<dd>A scorer callable object / function with signature
+<code>scorer(estimator, X, y)</code>.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_scoring(estimator, scoring=None, allow_none=False):
+    &#34;&#34;&#34;
+    Determine scorer from user options.
+    A TypeError will be thrown if the estimator cannot be scored.
+
+    Parameters
+    ----------
+    estimator : estimator object implementing &#39;fit&#39;
+        The object to use to fit the data.
+
+    scoring : string, callable or None, optional, default: None
+        A string (see model evaluation documentation) or
+        a scorer callable object / function with signature
+        ``scorer(estimator, X, y)``.
+
+    allow_none : boolean, optional, default: False
+        If no scoring is specified and the estimator has no score function, we
+        can either return None or raise an exception.
+
+    Returns
+    -------
+    scoring : callable
+        A scorer callable object / function with signature
+        ``scorer(estimator, X, y)``.
+    &#34;&#34;&#34;
+    has_scoring = scoring is not None
+    if not hasattr(estimator, &#34;fit&#34;):
+        raise TypeError(
+            &#34;estimator should a be an estimator implementing &#34;
+            &#34;&#39;fit&#39; method, %r was passed&#34; % estimator
+        )
+    elif has_scoring:
+        return get_scorer(scoring)
+    elif hasattr(estimator, &#34;score&#34;):
+        return _passthrough_scorer
+    elif allow_none:
+        return None
+    else:
+        raise TypeError(
+            &#34;If no scoring is specified, the estimator passed should &#34;
+            &#34;have a &#39;score&#39; method. The estimator %r does not.&#34; % estimator
+        )</code></pre>
+</details>
+</dd>
+<dt id="dropkick.scorer.get_scorer"><code class="name flex">
+<span>def <span class="ident">get_scorer</span></span>(<span>scoring)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_scorer(scoring):
+    if isinstance(scoring, six.string_types):
+        try:
+            scorer = SCORERS[scoring]
+        except KeyError:
+            raise ValueError(
+                &#34;%r is not a valid scoring value. &#34;
+                &#34;Valid options are %s&#34; % (scoring, sorted(SCORERS.keys()))
+            )
+    else:
+        scorer = scoring
+    return scorer</code></pre>
+</details>
+</dd>
+<dt id="dropkick.scorer.make_scorer"><code class="name flex">
+<span>def <span class="ident">make_scorer</span></span>(<span>score_func, greater_is_better=True, needs_proba=False, needs_threshold=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Make a scorer from a performance metric or loss function.
+This factory function wraps scoring functions for use in GridSearchCV
+and cross_val_score. It takes a score function, such as <code>accuracy_score</code>,
+<code>mean_squared_error</code>, <code>adjusted_rand_index</code> or <code>average_precision</code>
+and returns a callable that scores an estimator's output.
+Read more in the :ref:<code>User Guide &lt;scoring&gt;</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>score_func</code></strong> :&ensp;<code>callable,</code></dt>
+<dd>Score function (or loss function) with signature
+<code>score_func(y, y_pred, **kwargs)</code>.</dd>
+<dt><strong><code>greater_is_better</code></strong> :&ensp;<code>boolean</code>, default=<code>True</code></dt>
+<dd>Whether score_func is a score function (default), meaning high is good,
+or a loss function, meaning low is good. In the latter case, the
+scorer object will sign-flip the outcome of the score_func.</dd>
+<dt><strong><code>needs_proba</code></strong> :&ensp;<code>boolean</code>, default=<code>False</code></dt>
+<dd>Whether score_func requires predict_proba to get probability estimates
+out of a classifier.</dd>
+<dt><strong><code>needs_threshold</code></strong> :&ensp;<code>boolean</code>, default=<code>False</code></dt>
+<dd>
+<p>Whether score_func takes a continuous decision certainty.
+This only works for binary classification using estimators that
+have either a decision_function or predict_proba method.</p>
+<p>For example <code>average_precision</code> or the area under the roc curve
+can not be computed using discrete predictions alone.</p>
+</dd>
+<dt><strong><code>**kwargs</code></strong> :&ensp;<code>additional arguments</code></dt>
+<dd>Additional parameters to be passed to score_func.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>scorer</code></strong> :&ensp;<code>callable</code></dt>
+<dd>Callable object that returns a scalar score; greater is better.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from sklearn.metrics import fbeta_score, make_scorer
+&gt;&gt;&gt; ftwo_scorer = make_scorer(fbeta_score, beta=2)
+&gt;&gt;&gt; ftwo_scorer
+make_scorer(fbeta_score, beta=2)
+&gt;&gt;&gt; from sklearn.grid_search import GridSearchCV
+&gt;&gt;&gt; from sklearn.svm import LinearSVC
+&gt;&gt;&gt; grid = GridSearchCV(LinearSVC(), param_grid={'C': [1, 10]},
+...                     scoring=ftwo_scorer)
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def make_scorer(
+    score_func,
+    greater_is_better=True,
+    needs_proba=False,
+    needs_threshold=False,
+    **kwargs
+):
+    &#34;&#34;&#34;
+    Make a scorer from a performance metric or loss function.
+    This factory function wraps scoring functions for use in GridSearchCV
+    and cross_val_score. It takes a score function, such as ``accuracy_score``,
+    ``mean_squared_error``, ``adjusted_rand_index`` or ``average_precision``
+    and returns a callable that scores an estimator&#39;s output.
+    Read more in the :ref:`User Guide &lt;scoring&gt;`.
+
+    Parameters
+    ----------
+    score_func : callable,
+        Score function (or loss function) with signature
+        ``score_func(y, y_pred, **kwargs)``.
+
+    greater_is_better : boolean, default=True
+        Whether score_func is a score function (default), meaning high is good,
+        or a loss function, meaning low is good. In the latter case, the
+        scorer object will sign-flip the outcome of the score_func.
+
+    needs_proba : boolean, default=False
+        Whether score_func requires predict_proba to get probability estimates
+        out of a classifier.
+
+    needs_threshold : boolean, default=False
+        Whether score_func takes a continuous decision certainty.
+        This only works for binary classification using estimators that
+        have either a decision_function or predict_proba method.
+
+        For example ``average_precision`` or the area under the roc curve
+        can not be computed using discrete predictions alone.
+
+    **kwargs : additional arguments
+        Additional parameters to be passed to score_func.
+
+    Returns
+    -------
+    scorer : callable
+        Callable object that returns a scalar score; greater is better.
+
+    Examples
+    --------
+    &gt;&gt;&gt; from sklearn.metrics import fbeta_score, make_scorer
+    &gt;&gt;&gt; ftwo_scorer = make_scorer(fbeta_score, beta=2)
+    &gt;&gt;&gt; ftwo_scorer
+    make_scorer(fbeta_score, beta=2)
+    &gt;&gt;&gt; from sklearn.grid_search import GridSearchCV
+    &gt;&gt;&gt; from sklearn.svm import LinearSVC
+    &gt;&gt;&gt; grid = GridSearchCV(LinearSVC(), param_grid={&#39;C&#39;: [1, 10]},
+    ...                     scoring=ftwo_scorer)
+    &#34;&#34;&#34;
+    sign = 1 if greater_is_better else -1
+    if needs_proba and needs_threshold:
+        raise ValueError(
+            &#34;Set either needs_proba or needs_threshold to True,&#34; &#34; but not both.&#34;
+        )
+    if needs_proba:
+        cls = _ProbaScorer
+    elif needs_threshold:
+        cls = _ThresholdScorer
+    else:
+        cls = _PredictScorer
+    return cls(score_func, sign, kwargs)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="dropkick" href="index.html">dropkick</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="dropkick.scorer.check_scoring" href="#dropkick.scorer.check_scoring">check_scoring</a></code></li>
+<li><code><a title="dropkick.scorer.get_scorer" href="#dropkick.scorer.get_scorer">get_scorer</a></code></li>
+<li><code><a title="dropkick.scorer.make_scorer" href="#dropkick.scorer.make_scorer">make_scorer</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

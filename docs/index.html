@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>dropkick API documentation</title>
+<meta name="description" content="Automated cell filtering and QC of single-cell RNA sequencing data" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Package <code>dropkick</code></h1>
+</header>
+<section id="section-intro">
+<p>Automated cell filtering and QC of single-cell RNA sequencing data</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+Automated cell filtering and QC of single-cell RNA sequencing data
+&#34;&#34;&#34;
+from .api import (
+    dropkick,
+    recipe_dropkick,
+    plot_thresh_obs,
+    coef_inventory,
+    coef_plot,
+    score_plot,
+)
+from .qc import qc_summary
+
+__all__ = [
+    &#34;dropkick&#34;,
+    &#34;recipe_dropkick&#34;,
+    &#34;plot_thresh_obs&#34;,
+    &#34;coef_inventory&#34;,
+    &#34;coef_plot&#34;,
+    &#34;score_plot&#34;,
+    &#34;qc_summary&#34;,
+]
+
+from ._version import get_versions
+
+__version__ = get_versions()[&#34;version&#34;]
+del get_versions</code></pre>
+</details>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="dropkick.api" href="api.html">dropkick.api</a></code></dt>
+<dd>
+<div class="desc"><p>Functions for cell filtering of scRNA-seq data via dropkick</p></div>
+</dd>
+<dt><code class="name"><a title="dropkick.errors" href="errors.html">dropkick.errors</a></code></dt>
+<dd>
+<div class="desc"><p>Error reporting for dropkick model</p></div>
+</dd>
+<dt><code class="name"><a title="dropkick.logistic" href="logistic.html">dropkick.logistic</a></code></dt>
+<dd>
+<div class="desc"><p>Logistic regression model functions for dropkick</p></div>
+</dd>
+<dt><code class="name"><a title="dropkick.qc" href="qc.html">dropkick.qc</a></code></dt>
+<dd>
+<div class="desc"><p>Automated ambient gene testing and counts data QC</p></div>
+</dd>
+<dt><code class="name"><a title="dropkick.scorer" href="scorer.html">dropkick.scorer</a></code></dt>
+<dd>
+<div class="desc"><p>Modified version of <code>sklearn.metrics.scorer</code> to allow for scoring the entire lambda
+path of a <code>glmnet</code> model …</p></div>
+</dd>
+<dt><code class="name"><a title="dropkick.util" href="util.html">dropkick.util</a></code></dt>
+<dd>
+<div class="desc"><p>Utility functions for scoring dropkick logistic regression model</p></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="dropkick.coef_inventory"><code class="name flex">
+<span>def <span class="ident">coef_inventory</span></span>(<span>adata, n=10)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns highest and lowest coefficient values from logistic regression model,
+along with sparsity</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>adata</code></strong> :&ensp;<code>anndata.AnnData</code></dt>
+<dd>object generated from <code><a title="dropkick.dropkick" href="#dropkick.dropkick">dropkick()</a></code></dd>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code>, optional <code>(default=10)</code></dt>
+<dd>number of genes to show at top and bottom of coefficient list</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>prints top and bottom <code>n</code> genes by their coefficient values to console</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def coef_inventory(adata, n=10):
+    &#34;&#34;&#34;
+    Returns highest and lowest coefficient values from logistic regression model, 
+    along with sparsity
+
+    Parameters
+    ----------
+
+    adata : anndata.AnnData
+        object generated from `dropkick`
+    n : int, optional (default=10)
+        number of genes to show at top and bottom of coefficient list
+
+    Returns
+    -------
+
+    prints top and bottom `n` genes by their coefficient values to console
+    &#34;&#34;&#34;
+    print(&#34;\nTop HVGs by coefficient value (good cells):&#34;)
+    print(adata.var.loc[-adata.var.dropkick_coef.isna(), &#34;dropkick_coef&#34;].nlargest(n))
+    print(&#34;\nBottom HVGs by coefficient value (bad droplets):&#34;)
+    print(adata.var.loc[-adata.var.dropkick_coef.isna(), &#34;dropkick_coef&#34;].nsmallest(n))
+    n_zero = (adata.var.dropkick_coef == 0).sum()
+    n_coef = (-adata.var.dropkick_coef.isna()).sum()
+    sparsity = round((n_zero / n_coef) * 100, 3)
+    print(
+        &#34;\n{} coefficients equal to zero. Model sparsity: {} %\n&#34;.format(
+            n_zero, sparsity
+        )
+    )</code></pre>
+</details>
+</dd>
+<dt id="dropkick.coef_plot"><code class="name flex">
+<span>def <span class="ident">coef_plot</span></span>(<span>adata, axes=None, save_to=None, verbose=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plots dropkick coefficient values and cross validation (CV) scores for tested
+values of lambda (<code>lambda_path</code>)</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>adata</code></strong> :&ensp;<code>anndata.AnnData</code></dt>
+<dd>object generated from <code><a title="dropkick.dropkick" href="#dropkick.dropkick">dropkick()</a></code></dd>
+<dt><strong><code>axes</code></strong> :&ensp;<code>matplotlib.axes.Axes</code>, optional <code>(default=None)</code></dt>
+<dd>axes (2) object for plotting. if None, create new. ignored if <code>save_to</code> is not
+None.</dd>
+<dt><strong><code>save_to</code></strong> :&ensp;<code>str</code>, optional <code>(default=None)</code></dt>
+<dd>path to <code>.png</code> file for saving figure</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>print updates to console</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>fig</code></strong> :&ensp;<code>matplotlib.figure</code></dt>
+<dd>plot of CV scores (mean +/- SEM) and coefficient values (<code>coef_path</code>) versus
+log(<code>lambda_path</code>). includes indicator of chosen lambda value.</dd>
+</dl>
+<p>if <code>save_to</code> is not None, write to file instead of returning <code>fig</code> object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def coef_plot(adata, axes=None, save_to=None, verbose=True):
+    &#34;&#34;&#34;
+    Plots dropkick coefficient values and cross validation (CV) scores for tested 
+    values of lambda (`lambda_path`)
+
+    Parameters
+    ----------
+
+    adata : anndata.AnnData
+        object generated from `dropkick`
+    axes : matplotlib.axes.Axes, optional (default=None)
+        axes (2) object for plotting. if None, create new. ignored if `save_to` is not 
+        None.
+    save_to : str, optional (default=None)
+        path to `.png` file for saving figure
+    verbose : bool, optional (default=True)
+        print updates to console
+
+    Returns
+    -------
+
+    fig : matplotlib.figure
+        plot of CV scores (mean +/- SEM) and coefficient values (`coef_path`) versus
+        log(`lambda_path`). includes indicator of chosen lambda value.
+
+    if `save_to` is not None, write to file instead of returning `fig` object.
+    &#34;&#34;&#34;
+    cmap = cm.get_cmap(&#34;coolwarm&#34;)
+    if save_to or not axes:
+        fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(7, 7), sharex=True)
+    # plot coefficient values versus log(lambda) on top axis
+    axes[0].set_ylabel(&#34;Coefficient Value&#34;, fontsize=12)
+    axes[0].plot(
+        np.log(adata.uns[&#34;dropkick_args&#34;][&#34;lambda_path&#34;]),
+        adata.uns[&#34;dropkick_args&#34;][&#34;coef_path&#34;],
+        alpha=0.5,
+        linewidth=2,
+    )
+    axes[0].tick_params(axis=&#34;both&#34;, which=&#34;major&#34;, labelsize=12)
+    # plot vertical line at chosen lambda value and add to legend
+    axes[0].axvline(
+        np.log(adata.uns[&#34;dropkick_args&#34;][&#34;chosen_lambda&#34;]),
+        label=None,
+        color=&#34;k&#34;,
+        ls=&#34;--&#34;,
+        linewidth=2,
+    )
+    # plot total model sparsity and top three genes by coefficient value
+    # get range of values for positioning text
+    val_range = (
+        adata.uns[&#34;dropkick_args&#34;][&#34;coef_path&#34;].max()
+        - adata.uns[&#34;dropkick_args&#34;][&#34;coef_path&#34;].min()
+    )
+    # put model sparsity on top
+    n_zero = (adata.var.dropkick_coef == 0).sum()
+    n_coef = (-adata.var.dropkick_coef.isna()).sum()
+    sparsity = round((n_zero / n_coef) * 100, 2)
+    axes[0].text(
+        x=np.log(adata.uns[&#34;dropkick_args&#34;][&#34;chosen_lambda&#34;]),
+        y=adata.var.dropkick_coef.max() + (0.24 * val_range),
+        s=&#34; Sparsity: {} %&#34;.format(sparsity),
+        fontsize=12,
+        color=&#34;k&#34;,
+    )
+    # add top three genes by coefficient value as annotation
+    [
+        axes[0].text(
+            x=np.log(adata.uns[&#34;dropkick_args&#34;][&#34;chosen_lambda&#34;]),
+            y=adata.var.dropkick_coef.max()
+            + (0.18 * val_range)
+            - (0.06 * val_range * x),
+            s=&#34; &#34;
+            + adata.var.loc[-adata.var.dropkick_coef.isna(), &#34;dropkick_coef&#34;]
+            .nlargest(3)
+            .index[x],
+            fontsize=12,
+            fontstyle=&#34;italic&#34;,
+            color=&#34;g&#34;,
+        )
+        for x in range(3)
+    ]
+    # add bottom three genes by coefficient value as annotation
+    [
+        axes[0].text(
+            x=np.log(adata.uns[&#34;dropkick_args&#34;][&#34;chosen_lambda&#34;]),
+            y=adata.var.dropkick_coef.min()
+            - (0.24 * val_range)
+            + (0.06 * val_range * x),
+            s=&#34; &#34;
+            + adata.var.loc[-adata.var.dropkick_coef.isna(), &#34;dropkick_coef&#34;]
+            .nsmallest(3)
+            .index[x],
+            fontsize=12,
+            fontstyle=&#34;italic&#34;,
+            color=cmap(1.0),
+        )
+        for x in range(3)
+    ]
+
+    # plot CV scores versus log(lambda) on right y-axis
+    axes[1].plot(
+        np.log(adata.uns[&#34;dropkick_args&#34;][&#34;lambda_path&#34;]),
+        -2 * adata.uns[&#34;dropkick_args&#34;][&#34;cv_mean_score&#34;],
+        label=&#34;Mean Deviance&#34;,
+        color=cmap(0.0),
+        linewidth=2,
+    )
+    axes[1].fill_between(
+        np.log(adata.uns[&#34;dropkick_args&#34;][&#34;lambda_path&#34;]),
+        y1=(-2 * adata.uns[&#34;dropkick_args&#34;][&#34;cv_mean_score&#34;])
+        - 2 * adata.uns[&#34;dropkick_args&#34;][&#34;cv_standard_error&#34;],
+        y2=(-2 * adata.uns[&#34;dropkick_args&#34;][&#34;cv_mean_score&#34;])
+        + 2 * adata.uns[&#34;dropkick_args&#34;][&#34;cv_standard_error&#34;],
+        color=cmap(0.0),
+        alpha=0.3,
+        label=&#34;Deviance SEM&#34;,
+    )
+    # plot vertical line at chosen lambda value and add to legend
+    axes[1].axvline(
+        np.log(adata.uns[&#34;dropkick_args&#34;][&#34;chosen_lambda&#34;]),
+        label=&#34;Chosen lambda: {:.2e}&#34;.format(
+            adata.uns[&#34;dropkick_args&#34;][&#34;chosen_lambda&#34;][0]
+        ),
+        color=&#34;k&#34;,
+        ls=&#34;--&#34;,
+        linewidth=2,
+    )
+    axes[1].set_xlabel(&#34;Log (lambda)&#34;, fontsize=12)
+    axes[1].set_ylabel(&#34;Binomial Deviance&#34;, fontsize=12)
+    axes[1].tick_params(axis=&#34;both&#34;, which=&#34;major&#34;, labelsize=12)
+    axes[1].legend(fontsize=12)
+
+    plt.tight_layout()
+    if save_to:
+        if verbose:
+            print(&#34;Saving coefficient plot to {}&#34;.format(save_to))
+        fig.savefig(save_to, dpi=200)
+    elif axes is None:
+        return fig</code></pre>
+</details>
+</dd>
+<dt id="dropkick.dropkick"><code class="name flex">
+<span>def <span class="ident">dropkick</span></span>(<span>adata, min_genes=50, mito_names='^mt-|^MT-', n_ambient=10, n_hvgs=2000, metrics=['arcsinh_n_genes_by_counts'], thresh_methods=['multiotsu'], directions=['above'], alphas=[0.1], max_iter=2000, n_jobs=2, seed=18, verbose=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generates logistic regression model of cell quality</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>adata</code></strong> :&ensp;<code>anndata.AnnData</code></dt>
+<dd>object containing unfiltered, raw scRNA-seq counts in <code>.X</code> layer</dd>
+<dt><strong><code>min_genes</code></strong> :&ensp;<code>int</code>, optional <code>(default=50)</code></dt>
+<dd>threshold for minimum genes detected. ignores all cells with less than
+min_genes (dropkick label = 0).</dd>
+<dt><strong><code>mito_names</code></strong> :&ensp;<code>str</code>, optional <code>(default="^mt-|^MT-")</code></dt>
+<dd>substring encompassing mitochondrial gene names for calculation of mito
+expression</dd>
+<dt><strong><code>n_ambient</code></strong> :&ensp;<code>int</code>, optional <code>(default=10)</code></dt>
+<dd>number of ambient genes to call. top genes by cells.</dd>
+<dt><strong><code>n_hvgs</code></strong> :&ensp;<code>int</code> or <code>None</code>, optional <code>(default=2000)</code></dt>
+<dd>number of HVGs to calculate using Seurat method. if None, do not calculate
+HVGs</dd>
+<dt><strong><code>metrics</code></strong> :&ensp;<code>list</code> of <code>str</code>, optional <code>(default="arcsinh_n_genes_by_counts")</code></dt>
+<dd>name of column(s) to threshold from <code>adata.obs</code></dd>
+<dt><strong><code>thresh_methods</code></strong> :&ensp;<code>list</code> of <code>str {"otsu","multiotsu","li","mean"}</code>, optional</dt>
+<dd>&nbsp;</dd>
+<dt>(default="multiotsu")</dt>
+<dt>automated thresholding method(s) corresponding to each element in <code>metrics</code></dt>
+<dt><strong><code>directions</code></strong> :&ensp;<code>list</code> of <code>str {"above","below"}</code>, optional <code>(default="above")</code></dt>
+<dd>which direction to keep during training (dropkick label = 1) corresponding
+to each element in <code>metrics</code></dd>
+<dt><strong><code>alphas</code></strong> :&ensp;<code>list</code> of <code>float</code>, optional <code>(default=0.1)</code></dt>
+<dd>alpha value(s) to test using glmnet with n-fold cross validation</dd>
+<dt><strong><code>max_iter</code></strong> :&ensp;<code>int</code>, optional <code>(default=2000)</code></dt>
+<dd>number of iterations for glmnet optimization</dd>
+<dt><strong><code>n_jobs</code></strong> :&ensp;<code>int</code>, optional <code>(default=2)</code></dt>
+<dd>number of threads for cross validation by glmnet</dd>
+<dt><strong><code>seed</code></strong> :&ensp;<code>int</code>, optional <code>(default=18)</code></dt>
+<dd>random state for cross validation by glmnet</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>verbosity for glmnet training and warnings</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>rc</code></strong> :&ensp;<code>LogisticRegression</code></dt>
+<dd>trained logistic regression classifier</dd>
+</dl>
+<p>updates <code>adata</code> inplace to include "train", "dropkick_score", and
+"dropkick_label" columns in <code>.obs</code></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dropkick(
+    adata,
+    min_genes=50,
+    mito_names=&#34;^mt-|^MT-&#34;,
+    n_ambient=10,
+    n_hvgs=2000,
+    metrics=[&#34;arcsinh_n_genes_by_counts&#34;],
+    thresh_methods=[&#34;multiotsu&#34;],
+    directions=[&#34;above&#34;],
+    alphas=[0.1],
+    max_iter=2000,
+    n_jobs=2,
+    seed=18,
+    verbose=True,
+):
+    &#34;&#34;&#34;
+    Generates logistic regression model of cell quality
+
+    Parameters
+    ----------
+
+    adata : anndata.AnnData
+        object containing unfiltered, raw scRNA-seq counts in `.X` layer
+    min_genes : int, optional (default=50)
+        threshold for minimum genes detected. ignores all cells with less than 
+        min_genes (dropkick label = 0).
+    mito_names : str, optional (default=&#34;^mt-|^MT-&#34;)
+        substring encompassing mitochondrial gene names for calculation of mito 
+        expression
+    n_ambient : int, optional (default=10)
+        number of ambient genes to call. top genes by cells.
+    n_hvgs : int or None, optional (default=2000)
+        number of HVGs to calculate using Seurat method. if None, do not calculate 
+        HVGs
+    metrics : list of str, optional (default=&#34;arcsinh_n_genes_by_counts&#34;)
+        name of column(s) to threshold from `adata.obs`
+    thresh_methods : list of str {&#34;otsu&#34;,&#34;multiotsu&#34;,&#34;li&#34;,&#34;mean&#34;}, optional 
+    (default=&#34;multiotsu&#34;)
+        automated thresholding method(s) corresponding to each element in `metrics`
+    directions : list of str {&#34;above&#34;,&#34;below&#34;}, optional (default=&#34;above&#34;)
+        which direction to keep during training (dropkick label = 1) corresponding 
+        to each element in `metrics`
+    alphas : list of float, optional (default=0.1)
+        alpha value(s) to test using glmnet with n-fold cross validation
+    max_iter : int, optional (default=2000)
+        number of iterations for glmnet optimization
+    n_jobs : int, optional (default=2)
+        number of threads for cross validation by glmnet
+    seed : int, optional (default=18)
+        random state for cross validation by glmnet
+    verbose : bool, optional (default=True)
+        verbosity for glmnet training and warnings
+
+    Returns
+    -------
+
+    rc : LogisticRegression
+        trained logistic regression classifier
+
+    updates `adata` inplace to include &#34;train&#34;, &#34;dropkick_score&#34;, and 
+    &#34;dropkick_label&#34; columns in `.obs`
+    &#34;&#34;&#34;
+    # 0) preprocess counts and calculate required QC metrics
+    a = adata.copy()  # make copy of anndata before manipulating
+    a = recipe_dropkick(
+        a,
+        filter=True,
+        min_genes=min_genes,
+        calc_metrics=True,
+        mito_names=mito_names,
+        n_ambient=n_ambient,
+        target_sum=None,
+        n_hvgs=n_hvgs,
+        X_final=&#34;arcsinh_norm&#34;,
+        verbose=verbose,
+    )
+
+    # 1) threshold chosen heuristics using automated methods
+    if verbose:
+        print(&#34;Thresholding on heuristics for training labels:\n\t{}&#34;.format(metrics))
+    # convert args to list
+    if isinstance(metrics, str):
+        metrics = [metrics]
+    if isinstance(thresh_methods, str):
+        thresh_methods = [thresh_methods]
+    if isinstance(directions, str):
+        directions = [directions]
+    adata_thresh = auto_thresh_obs(
+        a, methods=thresh_methods, obs_cols=metrics, directions=directions
+    )
+
+    # 2) create labels from combination of thresholds
+    a = filter_thresh_obs(
+        a, adata_thresh, obs_cols=metrics, inclusive=True, name=&#34;train&#34;, verbose=verbose
+    )
+
+    X = a[:, a.var.highly_variable].X.copy()  # X for testing
+    y = a.obs[&#34;train&#34;].copy(deep=True)  # final y is &#34;train&#34; labels from step 2
+    if verbose:
+        print(&#34;Training dropkick with alphas:\n\t{}&#34;.format(alphas))
+
+    if len(alphas) &gt; 1:
+        # 3.1) cross-validation to choose alpha and lambda values
+        cv_scores = {&#34;rc&#34;: [], &#34;lambda&#34;: [], &#34;alpha&#34;: [], &#34;score&#34;: []}  # dictionary o/p
+        for alpha in alphas:
+            rc = LogitNet(
+                alpha=alpha,
+                n_lambda=100,
+                standardize=False,
+                scoring=&#34;log_loss&#34;,
+                cut_point=1.0,
+                n_splits=5,
+                max_iter=max_iter,
+                n_jobs=n_jobs,
+                random_state=seed,
+                verbose=verbose,
+            )
+            rc.fit(adata=a, y=y, n_hvgs=n_hvgs)
+            cv_scores[&#34;rc&#34;].append(rc)
+            cv_scores[&#34;alpha&#34;].append(alpha)
+            cv_scores[&#34;lambda&#34;].append(rc.lambda_best_)
+            cv_scores[&#34;score&#34;].append(rc.score(X, y, lamb=rc.lambda_best_))
+        # determine optimal lambda and alpha values by accuracy score
+        lambda_ = cv_scores[&#34;lambda&#34;][
+            cv_scores[&#34;score&#34;].index(max(cv_scores[&#34;score&#34;]))
+        ]  # choose alpha value
+        alpha_ = cv_scores[&#34;alpha&#34;][
+            cv_scores[&#34;score&#34;].index(max(cv_scores[&#34;score&#34;]))
+        ]  # choose l1 ratio
+        rc_ = cv_scores[&#34;rc&#34;][
+            cv_scores[&#34;score&#34;].index(max(cv_scores[&#34;score&#34;]))
+        ]  # choose classifier
+        print(
+            &#34;Chosen lambda value:\n\t{}\nChosen alpha value:\n\t{}&#34;.format(
+                lambda_, alpha_
+            )
+        )
+    else:
+        # 3.2) train model with single alpha value
+        rc_ = LogitNet(
+            alpha=alphas[0],
+            n_lambda=100,
+            standardize=False,
+            scoring=&#34;log_loss&#34;,
+            cut_point=1.0,
+            n_splits=5,
+            max_iter=max_iter,
+            n_jobs=n_jobs,
+            random_state=seed,
+            verbose=verbose,
+        )
+        rc_.fit(adata=a, y=y, n_hvgs=n_hvgs)
+        print(&#34;Chosen lambda value:\n\t{}&#34;.format(rc_.lambda_best_))
+        lambda_, alpha_ = rc_.lambda_best_, alphas[0]
+
+    # 4) use model to assign scores and labels to original adata
+    print(&#34;Assigning scores and labels&#34;)
+    if &#34;dropkick_score&#34; in a.obs.columns:
+        print(&#34;Warning: Overwriting existing dropkick scores in .obs&#34;)
+        a.obs.drop(columns=[&#34;dropkick_score&#34;], inplace=True)
+    adata.obs.loc[a.obs_names, &#34;dropkick_score&#34;] = rc_.predict_proba(X)[:, 1]
+    adata.obs.dropkick_score.fillna(0, inplace=True)  # fill ignored cells with zeros
+    if &#34;dropkick_label&#34; in a.obs.columns:
+        print(&#34;Warning: Overwriting existing dropkick labels in .obs&#34;)
+        a.obs.drop(columns=[&#34;dropkick_label&#34;], inplace=True)
+    adata.obs.loc[a.obs_names, &#34;dropkick_label&#34;] = rc_.predict(X)
+    adata.obs.dropkick_label.fillna(0, inplace=True)  # fill ignored cells with zeros
+    adata.obs.dropkick_label = (
+        adata.obs.dropkick_label.astype(bool).astype(str).astype(&#34;category&#34;)
+    )  # convert to categorical strings
+    for metric in metrics:
+        adata.obs.loc[a.obs_names, metric] = a.obs[metric]
+        adata.obs[metric].fillna(0, inplace=True)  # fill ignored cells with zeros
+    # add dropkick coefficients to genes used in model (hvgs from `a`)
+    adata.var.loc[
+        a.var_names[a.var.highly_variable], &#34;dropkick_coef&#34;
+    ] = rc_.coef_.squeeze()
+
+    # 5) save model hyperparameters in .uns
+    adata.uns[&#34;dropkick_thresholds&#34;] = adata_thresh
+    adata.uns[&#34;dropkick_args&#34;] = {
+        &#34;n_ambient&#34;: n_ambient,
+        &#34;n_hvgs&#34;: n_hvgs,
+        &#34;metrics&#34;: metrics,
+        &#34;thresh_methods&#34;: thresh_methods,
+        &#34;alphas&#34;: alphas,
+        &#34;chosen_alpha&#34;: alpha_,
+        &#34;lambda_path&#34;: rc_.lambda_path_,
+        &#34;chosen_lambda&#34;: lambda_,
+        &#34;coef_path&#34;: rc_.coef_path_.squeeze().T,
+        &#34;cv_mean_score&#34;: rc_.cv_mean_score_,
+        &#34;cv_standard_error&#34;: rc_.cv_standard_error_,
+        &#34;max_iter&#34;: max_iter,
+        &#34;seed&#34;: seed,
+    }  # save command-line arguments to .uns for reference
+
+    print(&#34;Done!\n&#34;)
+    return rc_</code></pre>
+</details>
+</dd>
+<dt id="dropkick.plot_thresh_obs"><code class="name flex">
+<span>def <span class="ident">plot_thresh_obs</span></span>(<span>adata, thresholds, bins=40, axes=None, save_to=None, verbose=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plots automated thresholding on metrics in <code>adata.obs</code> as output by
+<code>auto_thresh_obs()</code></p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>adata</code></strong> :&ensp;<code>anndata.AnnData</code></dt>
+<dd>object containing unfiltered scRNA-seq data</dd>
+<dt><strong><code>thresholds</code></strong> :&ensp;<code>dict</code></dt>
+<dd>output of <code>auto_thresh_obs()</code> function</dd>
+<dt><strong><code>bins</code></strong> :&ensp;<code>int</code>, optional <code>(default=40)</code></dt>
+<dd>number of bins for histogram</dd>
+<dt><strong><code>axes</code></strong> :&ensp;<code>matplotlib.axes.Axes</code>, optional <code>(default=None)</code></dt>
+<dd>single ax or list of axes objects corresponding to number of thresholds to
+plot. ignored if <code>save_to</code> is not None.</dd>
+<dt><strong><code>save_to</code></strong> :&ensp;<code>str</code>, optional <code>(default=None)</code></dt>
+<dd>path to <code>.png</code> file for saving figure; returns figure by default</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>print updates to console</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt>plot of distributions of <code>obs_cols</code> in thresholds dictionary with corresponding</dt>
+<dt><code>thresholds</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_thresh_obs(adata, thresholds, bins=40, axes=None, save_to=None, verbose=True):
+    &#34;&#34;&#34;
+    Plots automated thresholding on metrics in `adata.obs` as output by 
+    `auto_thresh_obs()`
+
+    Parameters
+    ----------
+
+    adata : anndata.AnnData
+        object containing unfiltered scRNA-seq data
+    thresholds : dict
+        output of `auto_thresh_obs()` function
+    bins : int, optional (default=40)
+        number of bins for histogram
+    axes : matplotlib.axes.Axes, optional (default=None)
+        single ax or list of axes objects corresponding to number of thresholds to 
+        plot. ignored if `save_to` is not None.
+    save_to : str, optional (default=None)
+        path to `.png` file for saving figure; returns figure by default
+    verbose : bool, optional (default=True)
+        print updates to console
+
+    Returns
+    -------
+
+    plot of distributions of `obs_cols` in thresholds dictionary with corresponding 
+    thresholds
+    &#34;&#34;&#34;
+    if save_to or not axes:
+        fig, axes = plt.subplots(
+            ncols=len(thresholds),
+            nrows=1,
+            figsize=(len(thresholds) * 4, 4),
+            sharey=True,
+        )
+    # if multiple plots, loop through axes
+    if len(thresholds) &gt; 1:
+        axes[0].set_ylabel(&#34;cells&#34;)
+        for i in range(len(thresholds)):
+            axes[i].hist(adata.obs[list(thresholds.keys())[i]], bins=bins)
+            if isinstance(list(thresholds.values())[i][&#34;thresh&#34;], np.ndarray):
+                [
+                    axes[i].axvline(_x, color=&#34;r&#34;)
+                    for _x in list(thresholds.values())[i][&#34;thresh&#34;]
+                ]
+            else:
+                axes[i].axvline(list(thresholds.values())[i], color=&#34;r&#34;)
+            axes[i].set_title(list(thresholds.keys())[i])
+    # if single plot, only one set of axes in subplot
+    else:
+        axes.set_ylabel(&#34;cells&#34;)
+        axes.hist(adata.obs[list(thresholds.keys())[0]], bins=bins)
+        if isinstance(list(thresholds.values())[0][&#34;thresh&#34;], np.ndarray):
+            [
+                axes.axvline(_x, color=&#34;r&#34;)
+                for _x in list(thresholds.values())[0][&#34;thresh&#34;]
+            ]
+        else:
+            axes.axvline(list(thresholds.values())[0][&#34;thresh&#34;], color=&#34;r&#34;)
+        axes.set_title(list(thresholds.keys())[0])
+    plt.tight_layout()
+    if save_to:
+        if verbose:
+            print(&#34;Saving threshold plot to {}&#34;.format(save_to))
+        fig.savefig(save_to, dpi=200)
+    elif not axes:
+        return fig</code></pre>
+</details>
+</dd>
+<dt id="dropkick.qc_summary"><code class="name flex">
+<span>def <span class="ident">qc_summary</span></span>(<span>adata, mito=True, ambient=True, genes=True, fig=None, save_to=None, verbose=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plots summary of counts distribution and ambient genes</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>adata</code></strong> :&ensp;<code>anndata.AnnData</code></dt>
+<dd>object containing unfiltered scRNA-seq data</dd>
+<dt><strong><code>mito</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>show <code>pct_counts_mito</code> as points</dd>
+<dt><strong><code>ambient</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>show <code>pct_counts_ambient</code> as points</dd>
+<dt><strong><code>genes</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>show <code>n_genes_by_counts</code> as points</dd>
+<dt><strong><code>fig</code></strong> :&ensp;<code>matplotlib.figure</code>, optional <code>(default=None)</code></dt>
+<dd>figure object for plotting. if None, create new.</dd>
+<dt><strong><code>save_to</code></strong> :&ensp;<code>str</code>, optional <code>(default=None)</code></dt>
+<dd>path to <code>.png</code> file for saving figure; returns figure by default</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>print updates to console</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>fig</code></strong> :&ensp;<code>matplotlib.figure</code></dt>
+<dd><code>counts_plot()</code>, <code>sc.pl.highest_expr_genes()</code>, and <code>dropout_plot()</code> in single
+figure</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def qc_summary(
+    adata, mito=True, ambient=True, genes=True, fig=None, save_to=None, verbose=True
+):
+    &#34;&#34;&#34;
+    Plots summary of counts distribution and ambient genes
+
+    Parameters
+    ----------
+
+    adata : anndata.AnnData
+        object containing unfiltered scRNA-seq data
+    mito : bool, optional (default=True)
+        show `pct_counts_mito` as points
+    ambient : bool, optional (default=True)
+        show `pct_counts_ambient` as points
+    genes : bool, optional (default=True)
+        show `n_genes_by_counts` as points
+    fig : matplotlib.figure, optional (default=None)
+        figure object for plotting. if None, create new.
+    save_to : str, optional (default=None)
+        path to `.png` file for saving figure; returns figure by default
+    verbose : bool, optional (default=True)
+        print updates to console
+
+    Returns
+    -------
+
+    fig : matplotlib.figure
+        `counts_plot()`, `sc.pl.highest_expr_genes()`, and `dropout_plot()` in single 
+        figure
+    &#34;&#34;&#34;
+    if not fig:
+        fig = plt.figure(figsize=(14, 7))
+    # arrange axes as subplots
+    gs = gridspec.GridSpec(nrows=3, ncols=3, figure=fig)
+    ax1 = plt.subplot(gs[0:4, 0:2])
+    ax2 = plt.subplot(gs[0:2, 2])
+    # add plots to axes
+    counts_plot(adata, ax=ax1, show=False, genes=genes, ambient=ambient, mito=mito)
+    dropout_plot(adata, ax=ax2, show=False)
+    gs.tight_layout(figure=fig, w_pad=1.8)
+    # return
+    if save_to is not None:
+        if verbose:
+            print(&#34;Saving QC plot to {}&#34;.format(save_to))
+        fig.savefig(save_to, dpi=200)
+    else:
+        return fig</code></pre>
+</details>
+</dd>
+<dt id="dropkick.recipe_dropkick"><code class="name flex">
+<span>def <span class="ident">recipe_dropkick</span></span>(<span>adata, filter=True, min_genes=50, calc_metrics=True, mito_names='^mt-|^MT-', n_ambient=10, target_sum=None, n_hvgs=2000, X_final='raw_counts', verbose=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>dropkick preprocessing recipe</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>adata</code></strong> :&ensp;<code>AnnData.AnnData</code></dt>
+<dd>object with raw counts data in <code>.X</code></dd>
+<dt><strong><code>filter</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>remove cells with less than min_genes detected and genes with zero total counts</dd>
+<dt><strong><code>min_genes</code></strong> :&ensp;<code>int</code>, optional <code>(default=50)</code></dt>
+<dd>threshold for minimum genes detected. ignored if <code>filter</code>==False.</dd>
+<dt><strong><code>calc_metrics</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>if False, do not calculate metrics in <code>.obs</code>/<code>.var</code></dd>
+<dt><strong><code>mito_names</code></strong> :&ensp;<code>str</code>, optional <code>(default="^mt-|^MT-")</code></dt>
+<dd>substring encompassing mitochondrial gene names for calculation of mito
+expression. ignored if <code>calc_metrics</code>==False.</dd>
+<dt><strong><code>n_ambient</code></strong> :&ensp;<code>int</code>, optional <code>(default=10)</code></dt>
+<dd>number of ambient genes to call (top genes by cells). ignored if
+<code>calc_metrics</code>==False.</dd>
+<dt><strong><code>target_sum</code></strong> :&ensp;<code>int</code>, optional <code>(default=None)</code></dt>
+<dd>total sum of counts for each cell prior to arcsinh or log1p transformations.
+if None, use median counts.</dd>
+<dt><strong><code>n_hvgs</code></strong> :&ensp;<code>int</code>, optional <code>(default=2000)</code></dt>
+<dd>number of HVGs to calculate using Seurat method. if None, do not calculate
+HVGs.</dd>
+<dt><strong><code>X_final</code></strong> :&ensp;<code>str</code>, optional <code>(default="raw_counts")</code></dt>
+<dd>which normalization layer should be left in <code>.X</code> slot? ("raw_counts",
+"arcsinh_norm", "log1p_norm")</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>print updates to the console</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>adata</code></strong> :&ensp;<code>AnnData.AnnData</code></dt>
+<dd>updated object includes:
+- useful <code>.obs</code> and <code>.var</code> columns (if <code>calc_metrics</code>==True)
+("total_counts", "pct_counts_mito", "n_genes_by_counts", etc.)
+- raw counts (<code>adata.layers["raw_counts"]</code>)
+- arcsinh-transformed normalized counts (<code>adata.layers["arcsinh_norm"]</code>)
+- highly variable genes if desired (<code>adata.var["highly_variable"]</code>)</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def recipe_dropkick(
+    adata,
+    filter=True,
+    min_genes=50,
+    calc_metrics=True,
+    mito_names=&#34;^mt-|^MT-&#34;,
+    n_ambient=10,
+    target_sum=None,
+    n_hvgs=2000,
+    X_final=&#34;raw_counts&#34;,
+    verbose=True,
+):
+    &#34;&#34;&#34;
+    dropkick preprocessing recipe
+
+    Parameters
+    ----------
+
+    adata : AnnData.AnnData
+        object with raw counts data in `.X`
+    filter : bool, optional (default=True)
+        remove cells with less than min_genes detected and genes with zero total counts
+    min_genes : int, optional (default=50)
+        threshold for minimum genes detected. ignored if `filter`==False.
+    calc_metrics : bool, optional (default=True)
+        if False, do not calculate metrics in `.obs`/`.var`
+    mito_names : str, optional (default=&#34;^mt-|^MT-&#34;)
+        substring encompassing mitochondrial gene names for calculation of mito 
+        expression. ignored if `calc_metrics`==False.
+    n_ambient : int, optional (default=10)
+        number of ambient genes to call (top genes by cells). ignored if 
+        `calc_metrics`==False.
+    target_sum : int, optional (default=None)
+        total sum of counts for each cell prior to arcsinh or log1p transformations. 
+        if None, use median counts.
+    n_hvgs : int, optional (default=2000)
+        number of HVGs to calculate using Seurat method. if None, do not calculate 
+        HVGs.
+    X_final : str, optional (default=&#34;raw_counts&#34;)
+        which normalization layer should be left in `.X` slot? (&#34;raw_counts&#34;, 
+        &#34;arcsinh_norm&#34;, &#34;log1p_norm&#34;)
+    verbose : bool, optional (default=True)
+        print updates to the console
+
+    Returns
+    -------
+
+    adata : AnnData.AnnData
+        updated object includes:
+        - useful `.obs` and `.var` columns (if `calc_metrics`==True)
+            (&#34;total_counts&#34;, &#34;pct_counts_mito&#34;, &#34;n_genes_by_counts&#34;, etc.)
+        - raw counts (`adata.layers[&#34;raw_counts&#34;]`)
+        - arcsinh-transformed normalized counts (`adata.layers[&#34;arcsinh_norm&#34;]`)
+        - highly variable genes if desired (`adata.var[&#34;highly_variable&#34;]`)
+    &#34;&#34;&#34;
+    if filter:
+        # remove cells and genes with zero total counts
+        orig_shape = adata.shape
+        sc.pp.filter_cells(adata, min_genes=min_genes)
+        sc.pp.filter_genes(adata, min_counts=1)
+        if verbose:
+            if adata.shape[0] != orig_shape[0]:
+                print(
+                    &#34;Ignoring {} barcodes with less than {} genes detected&#34;.format(
+                        orig_shape[0] - adata.shape[0], min_genes
+                    )
+                )
+            if adata.shape[1] != orig_shape[1]:
+                print(
+                    &#34;Ignoring {} genes with zero total counts&#34;.format(
+                        orig_shape[1] - adata.shape[1]
+                    )
+                )
+        adata.obs.drop(columns=[&#34;n_genes&#34;], inplace=True)
+        adata.var.drop(columns=[&#34;n_counts&#34;], inplace=True)
+
+    # store raw counts before manipulation
+    adata.layers[&#34;raw_counts&#34;] = adata.X.copy()
+
+    if calc_metrics:
+        # identify mitochondrial genes
+        adata.var[&#34;mito&#34;] = adata.var_names.str.contains(mito_names)
+        # identify putative ambient genes by lowest dropout pct (top n_ambient)
+        adata.var[&#34;pct_dropout_by_counts&#34;] = np.array(
+            (1 - (adata.X.astype(bool).sum(axis=0) / adata.n_obs)) * 100
+        ).squeeze()
+        lowest_dropout = adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).min()
+        highest_dropout = adata.var.pct_dropout_by_counts.nsmallest(n=n_ambient).max()
+        adata.var[&#34;ambient&#34;] = adata.var.pct_dropout_by_counts &lt;= highest_dropout
+        # reorder genes by dropout rate
+        adata = adata[:, np.argsort(adata.var.pct_dropout_by_counts)].copy()
+        if verbose:
+            print(
+                &#34;Top {} ambient genes have dropout rates between {} and {} percent:\n\t{}&#34;.format(
+                    len(adata.var_names[adata.var.ambient]),
+                    round(lowest_dropout, 3),
+                    round(highest_dropout, 3),
+                    adata.var_names[adata.var.ambient].tolist(),
+                )
+            )
+        # calculate standard qc .obs and .var
+        sc.pp.calculate_qc_metrics(
+            adata, qc_vars=[&#34;mito&#34;, &#34;ambient&#34;], inplace=True, percent_top=None
+        )
+        # remove pesky unneeded columns from .obs and .var
+        adata.obs.drop(
+            columns=adata.obs.columns[adata.obs.columns.str.startswith(&#34;log1p_&#34;)].union(
+                adata.obs.columns[adata.obs.columns.str.contains(&#34;total_counts_&#34;)]
+            ),
+            inplace=True,
+        )
+        adata.var.drop(
+            columns=adata.var.columns[adata.var.columns.str.startswith(&#34;log1p_&#34;)],
+            inplace=True,
+        )
+        # other arcsinh-transformed metrics
+        adata.obs[&#34;arcsinh_total_counts&#34;] = np.arcsinh(adata.obs[&#34;total_counts&#34;])
+        adata.obs[&#34;arcsinh_n_genes_by_counts&#34;] = np.arcsinh(
+            adata.obs[&#34;n_genes_by_counts&#34;]
+        )
+
+    # normalize counts before transforming
+    sc.pp.normalize_total(adata, target_sum=target_sum, layers=None, layer_norm=None)
+    adata.layers[&#34;norm_counts&#34;] = adata.X.copy()
+
+    # HVGs
+    if n_hvgs is not None:
+        if verbose:
+            print(&#34;Determining {} highly variable genes&#34;.format(n_hvgs))
+        # log1p transform for HVGs (adata.layers[&#34;log1p_norm&#34;])
+        sc.pp.log1p(adata)
+        adata.layers[&#34;log1p_norm&#34;] = adata.X.copy()  # save to .layers
+        sc.pp.highly_variable_genes(
+            adata, n_top_genes=n_hvgs, n_bins=20, flavor=&#34;seurat&#34;
+        )
+        adata.var.drop(columns=[&#34;dispersions&#34;, &#34;dispersions_norm&#34;], inplace=True)
+
+    # arcsinh-transform normalized counts (adata.layers[&#34;arcsinh_norm&#34;])
+    adata.X = np.arcsinh(adata.layers[&#34;norm_counts&#34;])
+    sc.pp.scale(adata)  # scale genes for feeding into model
+    adata.layers[
+        &#34;arcsinh_norm&#34;
+    ] = adata.X.copy()  # save arcsinh scaled counts in .layers
+    # remove unneeded stuff
+    del adata.layers[&#34;norm_counts&#34;]
+
+    # set .X as desired for downstream processing; default raw_counts
+    if (X_final != &#34;raw_counts&#34;) &amp; verbose:
+        print(&#34;Setting {} layer to .X&#34;.format(X_final))
+    adata.X = adata.layers[X_final].copy()
+
+    return adata</code></pre>
+</details>
+</dd>
+<dt id="dropkick.score_plot"><code class="name flex">
+<span>def <span class="ident">score_plot</span></span>(<span>adata, metrics=['arcsinh_n_genes_by_counts', 'pct_counts_ambient'], save_to=None, verbose=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plots scatter of barcodes across two metrics, with points colored by
+<code>dropkick_score</code>. Shows automated thresholding on metrics in <code>adata.obs</code> as output
+by <code>auto_thresh_obs()</code></p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>adata</code></strong> :&ensp;<code>anndata.AnnData</code></dt>
+<dd>object generated from <code><a title="dropkick.dropkick" href="#dropkick.dropkick">dropkick()</a></code></dd>
+<dt><strong><code>metrics</code></strong> :&ensp;<code>list</code> of <code>str</code>, optional</dt>
+<dd>&nbsp;</dd>
+<dt>(default=["arcsinh_n_genes_by_counts","pct_counts_ambient"])</dt>
+<dt>names of metrics to plot scatter and histograms for</dt>
+<dt><strong><code>save_to</code></strong> :&ensp;<code>str</code>, optional <code>(default=None)</code></dt>
+<dd>path to <code>.png</code> file for saving figure; returns figure if None</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
+<dd>print updates to console</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>g</code></strong> :&ensp;<code>seaborn.jointgrid</code></dt>
+<dd>joint plot of metric distributions colored by <code>dropkick_score</code> and containing
+corresponding training thresholds</dd>
+</dl>
+<p>if <code>save_to</code> is not None, write to file instead of returning <code>g</code> object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def score_plot(
+    adata,
+    metrics=[&#34;arcsinh_n_genes_by_counts&#34;, &#34;pct_counts_ambient&#34;],
+    save_to=None,
+    verbose=True,
+):
+    &#34;&#34;&#34;
+    Plots scatter of barcodes across two metrics, with points colored by 
+    `dropkick_score`. Shows automated thresholding on metrics in `adata.obs` as output 
+    by `auto_thresh_obs()`
+
+    Parameters
+    ----------
+
+    adata : anndata.AnnData
+        object generated from `dropkick`
+    metrics : list of str, optional 
+    (default=[&#34;arcsinh_n_genes_by_counts&#34;,&#34;pct_counts_ambient&#34;])
+        names of metrics to plot scatter and histograms for
+    save_to : str, optional (default=None)
+        path to `.png` file for saving figure; returns figure if None
+    verbose : bool, optional (default=True)
+        print updates to console
+
+    Returns
+    -------
+
+    g : seaborn.jointgrid
+        joint plot of metric distributions colored by `dropkick_score` and containing 
+        corresponding training thresholds
+
+    if `save_to` is not None, write to file instead of returning `g` object.
+    &#34;&#34;&#34;
+    # initialize joint plot object
+    g = sns.jointplot(
+        x=adata.obs[metrics[0]],
+        y=adata.obs[metrics[1]],
+        height=7,
+        space=0,
+        color=&#34;k&#34;,
+        marginal_kws=dict(bins=40),
+    )
+    # change to focus on scatter plot
+    g.ax_joint.cla()
+    plt.sca(g.ax_joint)
+    # set axes labels
+    plt.xlabel(metrics[0], fontsize=12)
+    plt.ylabel(metrics[1], fontsize=12)
+    # scatter plot, color by dropkick_score
+    points = plt.scatter(
+        x=adata.obs[metrics[0]],
+        y=adata.obs[metrics[1]],
+        c=adata.obs[&#34;dropkick_score&#34;],
+        s=25,
+        cmap=&#34;coolwarm_r&#34;,
+        alpha=0.5,
+    )
+    plt.tick_params(axis=&#34;both&#34;, which=&#34;major&#34;, labelsize=12)
+    # plot training thresholds on scatter
+    if metrics[0] in adata.uns[&#34;dropkick_thresholds&#34;]:
+        if isinstance(
+            adata.uns[&#34;dropkick_thresholds&#34;][metrics[0]][&#34;thresh&#34;], np.ndarray
+        ):
+            [
+                plt.axvline(_x, linestyle=&#34;--&#34;, color=&#34;k&#34;, linewidth=2)
+                for _x in adata.uns[&#34;dropkick_thresholds&#34;][metrics[0]][&#34;thresh&#34;]
+            ]
+        else:
+            plt.axvline(
+                adata.uns[&#34;dropkick_thresholds&#34;][metrics[0]][&#34;thresh&#34;],
+                linestyle=&#34;--&#34;,
+                color=&#34;k&#34;,
+                linewidth=2,
+            )
+    if metrics[1] in adata.uns[&#34;dropkick_thresholds&#34;]:
+        if isinstance(
+            adata.uns[&#34;dropkick_thresholds&#34;][metrics[1]][&#34;thresh&#34;], np.ndarray
+        ):
+            [
+                plt.axhline(_x, linestyle=&#34;--&#34;, color=&#34;k&#34;, linewidth=2)
+                for _x in adata.uns[&#34;dropkick_thresholds&#34;][metrics[1]][&#34;thresh&#34;]
+            ]
+        else:
+            plt.axhline(
+                adata.uns[&#34;dropkick_thresholds&#34;][metrics[1]][&#34;thresh&#34;],
+                linestyle=&#34;--&#34;,
+                color=&#34;k&#34;,
+                linewidth=2,
+            )
+    # change focus to x margin plot to continue threshold line
+    if metrics[0] in adata.uns[&#34;dropkick_thresholds&#34;]:
+        plt.sca(g.ax_marg_x)
+        if isinstance(
+            adata.uns[&#34;dropkick_thresholds&#34;][metrics[0]][&#34;thresh&#34;], np.ndarray
+        ):
+            [
+                plt.axvline(_x, linestyle=&#34;--&#34;, color=&#34;k&#34;, linewidth=2)
+                for _x in adata.uns[&#34;dropkick_thresholds&#34;][metrics[0]][&#34;thresh&#34;]
+            ]
+        else:
+            plt.axvline(
+                adata.uns[&#34;dropkick_thresholds&#34;][metrics[0]][&#34;thresh&#34;],
+                linestyle=&#34;--&#34;,
+                color=&#34;k&#34;,
+                linewidth=2,
+            )
+    # change focus to y margin plot to continue threshold line
+    if metrics[1] in adata.uns[&#34;dropkick_thresholds&#34;]:
+        plt.sca(g.ax_marg_y)
+        if isinstance(
+            adata.uns[&#34;dropkick_thresholds&#34;][metrics[1]][&#34;thresh&#34;], np.ndarray
+        ):
+            [
+                plt.axhline(_x, linestyle=&#34;--&#34;, color=&#34;k&#34;, linewidth=2)
+                for _x in adata.uns[&#34;dropkick_thresholds&#34;][metrics[1]][&#34;thresh&#34;]
+            ]
+        else:
+            plt.axhline(
+                adata.uns[&#34;dropkick_thresholds&#34;][metrics[1]][&#34;thresh&#34;],
+                linestyle=&#34;--&#34;,
+                color=&#34;k&#34;,
+                linewidth=2,
+            )
+    # add colorbar inside scatter axes
+    axins1 = inset_axes(
+        g.ax_joint,
+        width=&#34;40%&#34;,  # width = 40% of parent_bbox width
+        height=&#34;4%&#34;,  # height : 4%
+        loc=&#34;upper right&#34;,
+    )
+    cbar = plt.colorbar(
+        points,
+        cax=axins1,
+        drawedges=False,
+        label=&#34;dropkick_score&#34;,
+        orientation=&#34;horizontal&#34;,
+        ticks=[0.1, 0.5, 0.9],
+    )
+    cbar.ax.tick_params(labelsize=12)
+    cbar.solids.set_edgecolor(&#34;face&#34;)
+    # add histogram of scores on top of colorbar
+    axins2 = inset_axes(
+        g.ax_joint,
+        width=&#34;40%&#34;,  # width = 40% of parent_bbox width
+        height=&#34;4%&#34;,  # height : 4%
+        loc=&#34;upper right&#34;,
+    )
+    _ = axins2.hist(
+        # only include scores &gt; 0 in hist so you can see distribution
+        adata.obs.loc[adata.obs[&#34;dropkick_score&#34;] &gt; 0.0, &#34;dropkick_score&#34;],
+        bins=40,
+        color=&#34;k&#34;,
+        alpha=0.7,
+        histtype=&#34;step&#34;,
+    )
+    axins2.axis(&#34;off&#34;)
+    if save_to is not None:
+        if verbose:
+            print(&#34;Saving score plot to {}&#34;.format(save_to))
+        g.savefig(save_to, dpi=200)
+    else:
+        return g</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="dropkick.api" href="api.html">dropkick.api</a></code></li>
+<li><code><a title="dropkick.errors" href="errors.html">dropkick.errors</a></code></li>
+<li><code><a title="dropkick.logistic" href="logistic.html">dropkick.logistic</a></code></li>
+<li><code><a title="dropkick.qc" href="qc.html">dropkick.qc</a></code></li>
+<li><code><a title="dropkick.scorer" href="scorer.html">dropkick.scorer</a></code></li>
+<li><code><a title="dropkick.util" href="util.html">dropkick.util</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="dropkick.coef_inventory" href="#dropkick.coef_inventory">coef_inventory</a></code></li>
+<li><code><a title="dropkick.coef_plot" href="#dropkick.coef_plot">coef_plot</a></code></li>
+<li><code><a title="dropkick.dropkick" href="#dropkick.dropkick">dropkick</a></code></li>
+<li><code><a title="dropkick.plot_thresh_obs" href="#dropkick.plot_thresh_obs">plot_thresh_obs</a></code></li>
+<li><code><a title="dropkick.qc_summary" href="#dropkick.qc_summary">qc_summary</a></code></li>
+<li><code><a title="dropkick.recipe_dropkick" href="#dropkick.recipe_dropkick">recipe_dropkick</a></code></li>
+<li><code><a title="dropkick.score_plot" href="#dropkick.score_plot">score_plot</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>
