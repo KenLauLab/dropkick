@@ -72,6 +72,14 @@ def run(args):
     adata.write(
         "{}/{}_dropkick.h5ad".format(args.output_dir, name), compression="gzip",
     )
+    if args.csv:
+        if args.verbose:
+            print(
+                "Writing dropkick scores and labels to {}/{}_dropkick_scores.csv".format(
+                    args.output_dir, name
+                )
+            )
+        adata.obs[["dropkick_score","dropkick_label"]].to_csv("{}/{}_dropkick_scores.csv".format(args.output_dir, name), index=True, header=True)
     # generate plot of dropkick coefficient values and CV scores vs tested lambda_path
     coef_plot(
         adata,
@@ -218,6 +226,12 @@ def main():
         type=int,
         help="Random state for cross validation.",
         default=18,
+    )
+    run_parser.add_argument(
+        "--csv",
+        required=False,
+        help="Save dropkick scores and labels for each barcode to a flat .csv file.",
+        action="store_true",
     )
     run_parser.add_argument(
         "-q",
