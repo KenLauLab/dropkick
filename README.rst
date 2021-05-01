@@ -9,7 +9,7 @@ Automated cell filtering for single-cell RNA sequencing data.
 
 ``dropkick`` works primarily with |scanpy|_'s ``AnnData`` objects, and accepts input files in ``.h5ad`` or flat (``.csv``, ``.tsv``) format. It also writes outputs to ``.h5ad`` files when called from the terminal.
 
-Installation via ``pip`` or from source requires a Fortran compiler (``brew install gcc`` for Mac users).
+Installation via ``pip`` or from source requires a Fortran compiler (``brew install gcc`` for Mac users, ``sudo apt install gfortran`` for Linux users).
 
 Install from PyPI:
 ^^^^^^^^^^^^^^^^^^
