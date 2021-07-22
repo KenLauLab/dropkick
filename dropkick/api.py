@@ -692,7 +692,7 @@ def coef_inventory(adata, n=10):
     )
 
 
-def coef_plot(adata, axes=None, save_to=None, verbose=True):
+def coef_plot(adata, save_to=None, verbose=True):
     """
     Plots dropkick coefficient values and cross validation (CV) scores for tested 
     values of lambda (`lambda_path`)
@@ -702,9 +702,6 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
 
     adata : anndata.AnnData
         object generated from `dropkick`
-    axes : matplotlib.axes.Axes, optional (default=None)
-        axes (2) object for plotting. if None, create new. ignored if `save_to` is not 
-        None.
     save_to : str, optional (default=None)
         path to `.png` file for saving figure
     verbose : bool, optional (default=True)
@@ -720,8 +717,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
     if `save_to` is not None, write to file instead of returning `fig` object.
     """
     cmap = cm.get_cmap("coolwarm")
-    if save_to or not axes:
-        fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(7, 7), sharex=True)
+    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(7, 7), sharex=True)
     # plot coefficient values versus log(lambda) on top axis
     axes[0].set_ylabel("Coefficient Value", fontsize=12)
     axes[0].plot(
@@ -829,7 +825,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
         if verbose:
             print("Saving coefficient plot to {}".format(save_to))
         fig.savefig(save_to, dpi=200)
-    elif axes is None:
+    else:
         return fig
 
 
