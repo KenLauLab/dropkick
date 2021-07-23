@@ -617,14 +617,14 @@ def dropkick(
 
     # 4) use model to assign scores and labels to original adata
     print("Assigning scores and labels")
-    if "dropkick_score" in a.obs.columns:
+    if "dropkick_score" in adata.obs.columns:
         print("Warning: Overwriting existing dropkick scores in .obs")
-        a.obs.drop(columns=["dropkick_score"], inplace=True)
+        adata.obs.drop(columns=["dropkick_score"], inplace=True)
     adata.obs.loc[a.obs_names, "dropkick_score"] = rc_.predict_proba(X)[:, 1]
     adata.obs.dropkick_score.fillna(0, inplace=True)  # fill ignored cells with zeros
-    if "dropkick_label" in a.obs.columns:
+    if "dropkick_label" in adata.obs.columns:
         print("Warning: Overwriting existing dropkick labels in .obs")
-        a.obs.drop(columns=["dropkick_label"], inplace=True)
+        adata.obs.drop(columns=["dropkick_label"], inplace=True)
     adata.obs.loc[a.obs_names, "dropkick_label"] = rc_.predict(X)
     adata.obs.dropkick_label.fillna(0, inplace=True)  # fill ignored cells with zeros
     adata.obs.dropkick_label = (
@@ -692,7 +692,7 @@ def coef_inventory(adata, n=10):
     )
 
 
-def coef_plot(adata, axes=None, save_to=None, verbose=True):
+def coef_plot(adata, save_to=None, verbose=True):
     """
     Plots dropkick coefficient values and cross validation (CV) scores for tested 
     values of lambda (`lambda_path`)
@@ -702,9 +702,6 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
 
     adata : anndata.AnnData
         object generated from `dropkick`
-    axes : matplotlib.axes.Axes, optional (default=None)
-        axes (2) object for plotting. if None, create new. ignored if `save_to` is not 
-        None.
     save_to : str, optional (default=None)
         path to `.png` file for saving figure
     verbose : bool, optional (default=True)
@@ -720,8 +717,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
     if `save_to` is not None, write to file instead of returning `fig` object.
     """
     cmap = cm.get_cmap("coolwarm")
-    if save_to or not axes:
-        fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(7, 7), sharex=True)
+    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(7, 7), sharex=True)
     # plot coefficient values versus log(lambda) on top axis
     axes[0].set_ylabel("Coefficient Value", fontsize=12)
     axes[0].plot(
@@ -829,7 +825,7 @@ def coef_plot(adata, axes=None, save_to=None, verbose=True):
         if verbose:
             print("Saving coefficient plot to {}".format(save_to))
         fig.savefig(save_to, dpi=200)
-    elif axes is None:
+    else:
         return fig
 
 

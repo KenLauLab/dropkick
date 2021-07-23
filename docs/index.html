@@ -144,7 +144,7 @@ along with sparsity</p>
 </details>
 </dd>
 <dt id="dropkick.coef_plot"><code class="name flex">
-<span>def <span class="ident">coef_plot</span></span>(<span>adata, axes=None, save_to=None, verbose=True)</span>
+<span>def <span class="ident">coef_plot</span></span>(<span>adata, save_to=None, verbose=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Plots dropkick coefficient values and cross validation (CV) scores for tested
@@ -153,9 +153,6 @@ values of lambda (<code>lambda_path</code>)</p>
 <dl>
 <dt><strong><code>adata</code></strong> :&ensp;<code>anndata.AnnData</code></dt>
 <dd>object generated from <code><a title="dropkick.dropkick" href="#dropkick.dropkick">dropkick()</a></code></dd>
-<dt><strong><code>axes</code></strong> :&ensp;<code>matplotlib.axes.Axes</code>, optional <code>(default=None)</code></dt>
-<dd>axes (2) object for plotting. if None, create new. ignored if <code>save_to</code> is not
-None.</dd>
 <dt><strong><code>save_to</code></strong> :&ensp;<code>str</code>, optional <code>(default=None)</code></dt>
 <dd>path to <code>.png</code> file for saving figure</dd>
 <dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional <code>(default=True)</code></dt>
@@ -172,7 +169,7 @@ log(<code>lambda_path</code>). includes indicator of chosen lambda value.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def coef_plot(adata, axes=None, save_to=None, verbose=True):
+<pre><code class="python">def coef_plot(adata, save_to=None, verbose=True):
     &#34;&#34;&#34;
     Plots dropkick coefficient values and cross validation (CV) scores for tested 
     values of lambda (`lambda_path`)
@@ -182,9 +179,6 @@ log(<code>lambda_path</code>). includes indicator of chosen lambda value.</dd>
 
     adata : anndata.AnnData
         object generated from `dropkick`
-    axes : matplotlib.axes.Axes, optional (default=None)
-        axes (2) object for plotting. if None, create new. ignored if `save_to` is not 
-        None.
     save_to : str, optional (default=None)
         path to `.png` file for saving figure
     verbose : bool, optional (default=True)
@@ -200,8 +194,7 @@ log(<code>lambda_path</code>). includes indicator of chosen lambda value.</dd>
     if `save_to` is not None, write to file instead of returning `fig` object.
     &#34;&#34;&#34;
     cmap = cm.get_cmap(&#34;coolwarm&#34;)
-    if save_to or not axes:
-        fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(7, 7), sharex=True)
+    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(7, 7), sharex=True)
     # plot coefficient values versus log(lambda) on top axis
     axes[0].set_ylabel(&#34;Coefficient Value&#34;, fontsize=12)
     axes[0].plot(
@@ -309,7 +302,7 @@ log(<code>lambda_path</code>). includes indicator of chosen lambda value.</dd>
         if verbose:
             print(&#34;Saving coefficient plot to {}&#34;.format(save_to))
         fig.savefig(save_to, dpi=200)
-    elif axes is None:
+    else:
         return fig</code></pre>
 </details>
 </dd>
@@ -521,14 +514,14 @@ to each element in <code>metrics</code></dd>
 
     # 4) use model to assign scores and labels to original adata
     print(&#34;Assigning scores and labels&#34;)
-    if &#34;dropkick_score&#34; in a.obs.columns:
+    if &#34;dropkick_score&#34; in adata.obs.columns:
         print(&#34;Warning: Overwriting existing dropkick scores in .obs&#34;)
-        a.obs.drop(columns=[&#34;dropkick_score&#34;], inplace=True)
+        adata.obs.drop(columns=[&#34;dropkick_score&#34;], inplace=True)
     adata.obs.loc[a.obs_names, &#34;dropkick_score&#34;] = rc_.predict_proba(X)[:, 1]
     adata.obs.dropkick_score.fillna(0, inplace=True)  # fill ignored cells with zeros
-    if &#34;dropkick_label&#34; in a.obs.columns:
+    if &#34;dropkick_label&#34; in adata.obs.columns:
         print(&#34;Warning: Overwriting existing dropkick labels in .obs&#34;)
-        a.obs.drop(columns=[&#34;dropkick_label&#34;], inplace=True)
+        adata.obs.drop(columns=[&#34;dropkick_label&#34;], inplace=True)
     adata.obs.loc[a.obs_names, &#34;dropkick_label&#34;] = rc_.predict(X)
     adata.obs.dropkick_label.fillna(0, inplace=True)  # fill ignored cells with zeros
     adata.obs.dropkick_label = (
