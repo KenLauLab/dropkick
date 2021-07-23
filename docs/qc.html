@@ -64,6 +64,7 @@ def dropout_plot(adata, show=False, ax=None):
     if not ax:
         _, ax = plt.subplots(figsize=(4, 4))
     ax.plot(
+        np.arange(adata.n_vars)+1,
         adata.var.pct_dropout_by_counts[
             np.argsort(adata.var.pct_dropout_by_counts)
         ].values,
@@ -473,6 +474,7 @@ otherwise output plot.</dd>
     if not ax:
         _, ax = plt.subplots(figsize=(4, 4))
     ax.plot(
+        np.arange(adata.n_vars)+1,
         adata.var.pct_dropout_by_counts[
             np.argsort(adata.var.pct_dropout_by_counts)
         ].values,
