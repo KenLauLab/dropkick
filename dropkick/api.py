@@ -617,14 +617,14 @@ def dropkick(
 
     # 4) use model to assign scores and labels to original adata
     print("Assigning scores and labels")
-    if "dropkick_score" in a.obs.columns:
+    if "dropkick_score" in adata.obs.columns:
         print("Warning: Overwriting existing dropkick scores in .obs")
-        a.obs.drop(columns=["dropkick_score"], inplace=True)
+        adata.obs.drop(columns=["dropkick_score"], inplace=True)
     adata.obs.loc[a.obs_names, "dropkick_score"] = rc_.predict_proba(X)[:, 1]
     adata.obs.dropkick_score.fillna(0, inplace=True)  # fill ignored cells with zeros
-    if "dropkick_label" in a.obs.columns:
+    if "dropkick_label" in adata.obs.columns:
         print("Warning: Overwriting existing dropkick labels in .obs")
-        a.obs.drop(columns=["dropkick_label"], inplace=True)
+        adata.obs.drop(columns=["dropkick_label"], inplace=True)
     adata.obs.loc[a.obs_names, "dropkick_label"] = rc_.predict(X)
     adata.obs.dropkick_label.fillna(0, inplace=True)  # fill ignored cells with zeros
     adata.obs.dropkick_label = (
