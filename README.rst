@@ -5,6 +5,8 @@ Automated cell filtering for single-cell RNA sequencing data.
 
 |Latest Version|
 
+See our `Genome Research paper https://doi.org/10.1101/gr.271908.120`_ for details on ``dropkick``'s guiding principles and validation.
+
 ----
 
 ``dropkick`` works primarily with |scanpy|_'s ``AnnData`` objects, and accepts input files in ``.h5ad`` or flat (``.csv``, ``.tsv``) format. It also writes outputs to ``.h5ad`` files when called from the terminal.
