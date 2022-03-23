@@ -471,7 +471,7 @@ def dropkick(
     directions=["above"],
     alphas=[0.1],
     max_iter=2000,
-    n_jobs=2,
+    n_jobs=5,
     seed=18,
     verbose=True,
 ):
