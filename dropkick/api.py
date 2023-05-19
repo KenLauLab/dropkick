@@ -52,19 +52,19 @@ def recipe_dropkick(
     calc_metrics : bool, optional (default=True)
         if False, do not calculate metrics in `.obs`/`.var`
     mito_names : str, optional (default="^mt-|^MT-")
-        substring encompassing mitochondrial gene names for calculation of mito 
+        substring encompassing mitochondrial gene names for calculation of mito
         expression. ignored if `calc_metrics`==False.
     n_ambient : int, optional (default=10)
-        number of ambient genes to call (top genes by cells). ignored if 
+        number of ambient genes to call (top genes by cells). ignored if
         `calc_metrics`==False.
     target_sum : int, optional (default=None)
-        total sum of counts for each cell prior to arcsinh or log1p transformations. 
+        total sum of counts for each cell prior to arcsinh or log1p transformations.
         if None, use median counts.
     n_hvgs : int, optional (default=2000)
-        number of HVGs to calculate using Seurat method. if None, do not calculate 
+        number of HVGs to calculate using Seurat method. if None, do not calculate
         HVGs.
     X_final : str, optional (default="raw_counts")
-        which normalization layer should be left in `.X` slot? ("raw_counts", 
+        which normalization layer should be left in `.X` slot? ("raw_counts",
         "arcsinh_norm", "log1p_norm")
     verbose : bool, optional (default=True)
         print updates to the console
@@ -195,18 +195,18 @@ def auto_thresh_obs(
         object containing unfiltered scRNA-seq data
     obs_cols : list of str, optional (default="arcsinh_n_genes_by_counts")
         name of column(s) to threshold from `adata.obs`
-    methods : list of str {"otsu","multiotsu","li","mean"}, optional 
+    methods : list of str {"otsu","multiotsu","li","mean"}, optional
     (default="multiotsu")
         automated thresholding method(s) corresponding to each element in `obs_cols`
     directions : list of str {"above","below"}, optional (default="above")
-        which direction to keep during training (dropkick label = 1) corresponding 
+        which direction to keep during training (dropkick label = 1) corresponding
         to each element in `obs_cols`
 
     Returns
     -------
 
     thresholds : dict
-        keys are `obs_cols` and values are dictionaries with "thresh" : threshold 
+        keys are `obs_cols` and values are dictionaries with "thresh" : threshold
         results & "direction" : direction to keep for training
     """
     # convert to lists before looping
@@ -242,7 +242,7 @@ def auto_thresh_obs(
 
 def plot_thresh_obs(adata, thresholds, bins=40, axes=None, save_to=None, verbose=True):
     """
-    Plots automated thresholding on metrics in `adata.obs` as output by 
+    Plots automated thresholding on metrics in `adata.obs` as output by
     `auto_thresh_obs()`
 
     Parameters
@@ -255,7 +255,7 @@ def plot_thresh_obs(adata, thresholds, bins=40, axes=None, save_to=None, verbose
     bins : int, optional (default=40)
         number of bins for histogram
     axes : matplotlib.axes.Axes, optional (default=None)
-        single ax or list of axes objects corresponding to number of thresholds to 
+        single ax or list of axes objects corresponding to number of thresholds to
         plot. ignored if `save_to` is not None.
     save_to : str, optional (default=None)
         path to `.png` file for saving figure; returns figure by default
@@ -265,7 +265,7 @@ def plot_thresh_obs(adata, thresholds, bins=40, axes=None, save_to=None, verbose
     Returns
     -------
 
-    plot of distributions of `obs_cols` in thresholds dictionary with corresponding 
+    plot of distributions of `obs_cols` in thresholds dictionary with corresponding
     thresholds
     """
     if save_to or not axes:
@@ -318,7 +318,7 @@ def filter_thresh_obs(
     verbose=True,
 ):
     """
-    Filters cells by thresholding on metrics in `adata.obs` as output by 
+    Filters cells by thresholding on metrics in `adata.obs` as output by
     `auto_thresh_obs()`
 
     Parameters
@@ -484,23 +484,23 @@ def dropkick(
     adata : anndata.AnnData
         object containing unfiltered, raw scRNA-seq counts in `.X` layer
     min_genes : int, optional (default=50)
-        threshold for minimum genes detected. ignores all cells with less than 
+        threshold for minimum genes detected. ignores all cells with less than
         min_genes (dropkick label = 0).
     mito_names : str, optional (default="^mt-|^MT-")
-        substring encompassing mitochondrial gene names for calculation of mito 
+        substring encompassing mitochondrial gene names for calculation of mito
         expression
     n_ambient : int, optional (default=10)
         number of ambient genes to call. top genes by cells.
     n_hvgs : int or None, optional (default=2000)
-        number of HVGs to calculate using Seurat method. if None, do not calculate 
+        number of HVGs to calculate using Seurat method. if None, do not calculate
         HVGs
     metrics : list of str, optional (default="arcsinh_n_genes_by_counts")
         name of column(s) to threshold from `adata.obs`
-    thresh_methods : list of str {"otsu","multiotsu","li","mean"}, optional 
+    thresh_methods : list of str {"otsu","multiotsu","li","mean"}, optional
     (default="multiotsu")
         automated thresholding method(s) corresponding to each element in `metrics`
     directions : list of str {"above","below"}, optional (default="above")
-        which direction to keep during training (dropkick label = 1) corresponding 
+        which direction to keep during training (dropkick label = 1) corresponding
         to each element in `metrics`
     alphas : list of float, optional (default=0.1)
         alpha value(s) to test using glmnet with n-fold cross validation
@@ -519,7 +519,7 @@ def dropkick(
     rc : LogisticRegression
         trained logistic regression classifier
 
-    updates `adata` inplace to include "train", "dropkick_score", and 
+    updates `adata` inplace to include "train", "dropkick_score", and
     "dropkick_label" columns in `.obs`
     """
     # 0) preprocess counts and calculate required QC metrics
@@ -619,21 +619,29 @@ def dropkick(
     print("Assigning scores and labels")
     if "dropkick_score" in adata.obs.columns:
         print("Warning: Overwriting existing dropkick scores in .obs")
-        adata.obs.drop(columns=["dropkick_score"], inplace=True)
+
+    adata.obs["dropkick_score"] = np.nan  # initialize dropkick_score as NaNs
     adata.obs.loc[a.obs_names, "dropkick_score"] = rc_.predict_proba(X)[:, 1]
     adata.obs.dropkick_score.fillna(0, inplace=True)  # fill ignored cells with zeros
+
     if "dropkick_label" in adata.obs.columns:
         print("Warning: Overwriting existing dropkick labels in .obs")
-        adata.obs.drop(columns=["dropkick_label"], inplace=True)
+
+    adata.obs["dropkick_label"] = np.nan  # initialize dropkick_label as NaNs
     adata.obs.loc[a.obs_names, "dropkick_label"] = rc_.predict(X)
     adata.obs.dropkick_label.fillna(0, inplace=True)  # fill ignored cells with zeros
     adata.obs.dropkick_label = (
         adata.obs.dropkick_label.astype(bool).astype(str).astype("category")
     )  # convert to categorical strings
+
+    # add heuristics to .obs
     for metric in metrics:
+        adata.obs[metric] = np.nan  # initialize as NaNs
         adata.obs.loc[a.obs_names, metric] = a.obs[metric]
         adata.obs[metric].fillna(0, inplace=True)  # fill ignored cells with zeros
+
     # add dropkick coefficients to genes used in model (hvgs from `a`)
+    adata.var["dropkick_coef"] = np.nan  # initialize gene coefs as NaNs
     adata.var.loc[
         a.var_names[a.var.highly_variable], "dropkick_coef"
     ] = rc_.coef_.squeeze()
@@ -662,7 +670,7 @@ def dropkick(
 
 def coef_inventory(adata, n=10):
     """
-    Returns highest and lowest coefficient values from logistic regression model, 
+    Returns highest and lowest coefficient values from logistic regression model,
     along with sparsity
 
     Parameters
@@ -694,7 +702,7 @@ def coef_inventory(adata, n=10):
 
 def coef_plot(adata, save_to=None, verbose=True):
     """
-    Plots dropkick coefficient values and cross validation (CV) scores for tested 
+    Plots dropkick coefficient values and cross validation (CV) scores for tested
     values of lambda (`lambda_path`)
 
     Parameters
@@ -836,8 +844,8 @@ def score_plot(
     verbose=True,
 ):
     """
-    Plots scatter of barcodes across two metrics, with points colored by 
-    `dropkick_score`. Shows automated thresholding on metrics in `adata.obs` as output 
+    Plots scatter of barcodes across two metrics, with points colored by
+    `dropkick_score`. Shows automated thresholding on metrics in `adata.obs` as output
     by `auto_thresh_obs()`
 
     Parameters
@@ -845,7 +853,7 @@ def score_plot(
 
     adata : anndata.AnnData
         object generated from `dropkick`
-    metrics : list of str, optional 
+    metrics : list of str, optional
     (default=["arcsinh_n_genes_by_counts","pct_counts_ambient"])
         names of metrics to plot scatter and histograms for
     save_to : str, optional (default=None)
@@ -857,7 +865,7 @@ def score_plot(
     -------
 
     g : seaborn.jointgrid
-        joint plot of metric distributions colored by `dropkick_score` and containing 
+        joint plot of metric distributions colored by `dropkick_score` and containing
         corresponding training thresholds
 
     if `save_to` is not None, write to file instead of returning `g` object.
