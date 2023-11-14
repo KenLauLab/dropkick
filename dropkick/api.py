@@ -10,8 +10,6 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import seaborn as sns
-
-sns.set_style("white")
 import scanpy as sc
 import time
 import threading
@@ -871,14 +869,15 @@ def score_plot(
     if `save_to` is not None, write to file instead of returning `g` object.
     """
     # initialize joint plot object
-    g = sns.jointplot(
-        x=adata.obs[metrics[0]],
-        y=adata.obs[metrics[1]],
-        height=7,
-        space=0,
-        color="k",
-        marginal_kws=dict(bins=40),
-    )
+    with sns.axes_style("white"):
+        g = sns.jointplot(
+            x=adata.obs[metrics[0]],
+            y=adata.obs[metrics[1]],
+            height=7,
+            space=0,
+            color="k",
+            marginal_kws=dict(bins=40),
+        )
     # change to focus on scatter plot
     g.ax_joint.cla()
     plt.sca(g.ax_joint)
